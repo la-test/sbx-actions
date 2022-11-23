@@ -1,11 +1,10 @@
 name: First action ever
-on:
-  on: workflow_dispatch
-    inputs:
-      secret:
-        description: 'Enter the secret to deploy'
-        type: string
-        required: true
+on: workflow_dispatch
+  inputs:
+    secret:
+      description: 'Enter the secret to deploy'
+      type: string
+      required: true
 jobs:
   first_job:
     name: First job ever
