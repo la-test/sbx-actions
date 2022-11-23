@@ -12,4 +12,6 @@ jobs:
   first_job:
     name: First job ever
     steps:
-      echo "secret={secret}"
+      - name: Test our input
+        run:
+          echo "secret={secret}"
