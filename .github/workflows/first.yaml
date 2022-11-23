@@ -14,7 +14,7 @@ jobs:
     name: First job ever
     steps:
       - name: Test our input
-        run:
+        run: |
           echo "secret=$SECRET"
         env:
           SECRET: ${{ inputs.secret }}
