@@ -10,8 +10,11 @@ on:
 
 jobs:
   first_job:
+    runs-on: ubuntu-latest
     name: First job ever
     steps:
       - name: Test our input
         run:
-          echo "secret={secret}"
+          echo "secret=$SECRET"
+        env:
+          SECRET: ${{ inputs.secret }}
