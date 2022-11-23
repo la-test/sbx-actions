@@ -10,6 +10,7 @@ on:
 
 jobs:
   first_job:
+    name: firstme
     runs-on: ubuntu-latest
     name: First job ever
     steps:
