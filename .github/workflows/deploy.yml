@@ -19,7 +19,7 @@ jobs:
       - name: Check ssh command
         run: |
           echo "${SSH_KEY}" | ./scripts/ssh_loadkey.sh
-          ssh "${SSH_USER}"@${SSH_HOST}" whoami
+          ssh "${SSH_USER}@${SSH_HOST}" whoami
         env:
           SSH_USER: bdonneaux
           SSH_HOST: sv1.tergology.com
