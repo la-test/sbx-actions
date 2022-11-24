@@ -45,15 +45,19 @@ EOF
 } > "${SSH_ASKPASS}" \
 && chmod +x "${SSH_ASKPASS}"
 
-# Read encrypted key from input
-while read LN; do
-  echo "${LN}" >> "${SSH_PRIVKEY}"
-done
+# Read encrypted key from environment
+if [ -n "${SSH_KEY}" ]
+then
+  echo "${SSH_KEY}" > "${SSH_PRIVKEY}"
+else
+  echo "${0} could not read SSH_KEY from environment!" > /dev/stderr
+  exit 1
+fi
 
 # Validate the priv key by extracting the pub one
 ssh-keygen -e -f "${SSH_PRIVKEY}" -N "${SSH_PASS}" > "${SSH_PUBKEY}" \
 || {
-  echo "${0} could not read key from stdin!" > /dev/stderr
+  echo "${0} could not read SSH_KEY with SSH_PASS from environment!" > /dev/stderr
   exit 1
 }
 
