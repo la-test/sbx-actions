@@ -1,0 +1,3 @@
+# MW Backend - staging
+vps-33320a1d.vps.ovh.net,mailbox.stage.mw.leastauthority.com,relay.stage.mw.leastauthority.com,51.91.101.169 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEnk8Jq+H7VNzY4USWRsyBPMAel1Lk/mPHZq+XyQnl23
+vps-33320a1d.vps.ovh.net,mailbox.stage.mw.leastauthority.com,relay.stage.mw.leastauthority.com,51.91.101.169 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBO6TkRCOiDimgo3GfADr/yyiz8qjw4ZmIt6jRRaR4df2vjiKhNqVx6RtmCYxaRg+D3/UGOQ+waNzjeqShar3YYY=
