@@ -1,0 +1,24 @@
+name: Deploy Infra
+
+on:
+  workflow_dispatch:
+    inputs:
+      ssh_pass:
+        description: 'Enter the ssh passphrase'
+        type: string
+        required: true
+
+jobs:
+  check_cnx:
+    name: Check connectivity
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check ssh command
+        run: |
+          echo "${SSH_KEY}" | ./scripts/ssh_loadkey.sh
+          ssh "${SSH_USER}"@${SSH_HOST}" whoami
+        env:
+          SSH_USER: bdonneaux
+          SSH_HOST: sv1.tergology.com
+          SSH_PASS: ${{ inputs.secret }}
+          SSH_KEY: ${{ secrets.CID_PRIVATE_KEY }}
