@@ -58,10 +58,11 @@ ssh-keygen -e -f "${SSH_PRIVKEY}" -N "${SSH_PASS}" > "${SSH_PUBKEY}" \
 }
 
 # Start ssh-agent
-#if [ -z "${SSH_AGENT_PID-}" ]
-#then
-#  eval "$(ssh-agent -s)"
-#fi
+if [ -z "${SSH_AGENT_PID-}" ]
+then
+  eval "$(ssh-agent -s)"
+  export SSH_AGENT_PID SSH_AUTH_SOCK
+fi
 
 # Add private key to ssh-agent
 DISPLAY=":0.0" SSH_ASKPASS="${SSH_ASKPASS}" ssh-add "${SSH_PRIVKEY}" </dev/null > /dev/stderr
