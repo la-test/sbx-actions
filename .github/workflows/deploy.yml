@@ -19,6 +19,7 @@ jobs:
       - name: Check ssh command
         run: |
           echo "${SSH_KEY}" | ./scripts/ssh_loadkey.sh
+          env | grep SSH
           ssh -v -F ./ssh/config "${SSH_USER}@${SSH_HOST}" whoami
         env:
           SSH_USER: debian
