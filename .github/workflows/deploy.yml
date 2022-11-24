@@ -20,9 +20,7 @@ jobs:
         run: |
           eval "$(ssh-agent -s)"
           ./scripts/ssh_loadkey.sh
-          ssh -F ./ssh/config "${SSH_USER}@${SSH_HOST}" whoami
+          ssh -F ./ssh/config debian@vps-33320a1d.vps.ovh.net whoami
         env:
-          SSH_USER: debian
-          SSH_HOST: vps-33320a1d.vps.ovh.net
           SSH_PASS: ${{ inputs.ssh_pass }}
           SSH_KEY: ${{ secrets.CID_PRIVATE_KEY }}
