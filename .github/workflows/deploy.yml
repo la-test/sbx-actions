@@ -15,6 +15,7 @@ jobs:
     steps:
       - name: Check ssh command
         run: |
+          ls -lA ./
           ls -lA ./scripts
           echo "${SSH_KEY}" | ./scripts/ssh_loadkey.sh
           ssh "${SSH_USER}"@${SSH_HOST}" whoami
