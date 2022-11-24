@@ -1,0 +1,5 @@
+BatchMode yes
+ConnectTimeout 10
+ServerAliveInterval 10
+ServerAliveCountMax 5
+UserKnownHostsFile ./ssh/known_hosts
