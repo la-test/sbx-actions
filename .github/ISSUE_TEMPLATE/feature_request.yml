@@ -25,19 +25,16 @@ body:
       value: "If Alice could do this before doing that, she could then easily send/receive something to/from Bob in a specific way..."
     validations:
       required: true
-  - type: checkboxes
+  - type: dropdown
     id: use-case-types
     attributes:
       label: What type of use cases could benefits from this feature?
+      multiple: true
       options:
-        - label: Customer to Customer (C2C)
-          required: false
-        - label: Business to Business (B2B)
-          required: false
-        - label: Business to Customer (B2C)
-          required: false
-        - label: Customer to Business (C2B)
-          required: false
+        - Customer to Customer (C2C)
+        - Business to Business (B2B)
+        - Business to Customer (B2C)
+        - Customer to Business (C2B)
   - type: textarea
     id: use-cases
     attributes:
@@ -46,8 +43,8 @@ body:
       placeholder: Tell us about possible use cases of this feature
       value: |
         - ACME Corporation could provide A and B to their customers
-        - Familly members could share C with their relatives
-        - Neighbors could approve D when requested by the local authorities
+        - Family members could share C or D with their relatives
+        - Neighbors could approve E when requested by the local authorities
         - ...
   - type: input
     id: contact
