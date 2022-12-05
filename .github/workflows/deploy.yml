@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v3    
 
       - name: Get ssh key
-        uses: .github/actions/magic-wormhole-cli
+        uses: ./.github/actions/magic-wormhole-cli
         with:
           path: ssh_key
           code: ${{ inputs.key_code }}
