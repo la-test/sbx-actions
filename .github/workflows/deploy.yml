@@ -1,10 +1,10 @@
-name: Deploy Infra
+name: Deploy
 
 on:
   workflow_dispatch:
     inputs:
-      ssh_pass:
-        description: 'Enter the ssh passphrase'
+      key_code:
+        description: 'Magic Wormhole key code'
         type: string
         required: true
 
@@ -16,11 +16,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3    
 
+      - name: Get ssh key
+        uses: .github/actions/magic-wormhole-cli
+        with:
+          path: ssh_key
+          code: ${{ inputs.key_code }}
+
       - name: Check ssh command
         run: |
           eval "$(ssh-agent -s)"
-          ./scripts/ssh_loadkey.sh
+          cat ssh_key | ./scripts/ssh_loadkey.sh
           ssh -F ./ssh/config debian@vps-33320a1d.vps.ovh.net whoami
-        env:
-          SSH_PASS: ${{ inputs.ssh_pass }}
-          SSH_KEY: ${{ secrets.CID_PRIVATE_KEY }}
