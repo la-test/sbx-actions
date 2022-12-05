@@ -17,7 +17,7 @@ inputs:
     default: tcp://relay.mw.leastauthority.com:4001
 runs:
   using: 'docker'
-  image: 'magic-wormhole-cli.Dockerfile'
+  image: 'Dockerfile'
   args:
     - wormhole
     - --appid
