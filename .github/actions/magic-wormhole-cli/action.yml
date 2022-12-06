@@ -18,7 +18,11 @@ inputs:
 runs:
   using: 'docker'
   image: 'Dockerfile'
+  # entrypoint: 'entrypoint.sh'
   args:
+    # - env
+    # - pip3
+    # - list
     - wormhole
     - --appid
     - lothar.com/wormhole/text-or-file-xfer

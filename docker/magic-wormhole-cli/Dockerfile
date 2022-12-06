@@ -5,21 +5,13 @@
 # Pull official base image from DockerHub
 FROM debian:11
 
+# Avoid warnings while installing the required packages
+ARG DEBIAN_FRONTEND=noninteractive
+
 # Prepare locales
 ARG LANG=C.UTF-8
 ARG LANGUAGE=en_US:en
 ARG LC_ALL=C.UTF-8
-
-# perl: warning: Setting locale failed.
-# perl: warning: Please check that your locale settings:
-# 	LANGUAGE = "en_US:en",
-# 	LC_ALL = "en_US.UTF-8",
-# 	LANG = "en_US.UTF-8"
-#     are supported and installed on your system.
-# perl: warning: Falling back to the standard locale ("C").
-
-# C.UTF-8 ???
-
 
 # Configure desired timezone
 ARG TZ=Europe/Berlin
@@ -40,7 +32,14 @@ RUN INSTALL_PKGS="python${PYTHON_VERSION}-minimal python3-pip" && \
 
 # Upgrade Pip from PyPi
 ARG PIP_VERSION='22.3.1'
-RUN python${PYTHON_VERSION} -m pip install "pip==${PIP_VERSION}"
+RUN python${PYTHON_VERSION} -m pip install --upgrade "pip==${PIP_VERSION}"
+
+# Copy requirements
+COPY requirements.txt /root/requirements.txt
+#RUN chown ${user}:${user} /home/${user}/requirements.txt
+
+# Install requirements
+RUN python${PYTHON_VERSION} -m pip install --upgrade -r root/requirements.txt
 
 ###########################
 # User level requirements #
@@ -68,8 +67,8 @@ ENV PATH="${HOME}/.local/bin:${PATH}"
 ENV PYTHONPATH="."
 
 # Copy requirements
-COPY requirements.txt /home/${user}/requirements.txt
+#COPY requirements.txt /home/${user}/requirements.txt
 #RUN chown ${user}:${user} /home/${user}/requirements.txt
 
 # Install requirements
-RUN python${PYTHON_VERSION} -m pip install --user --upgrade -r requirements.txt
+#RUN python${PYTHON_VERSION} -m pip install --user --upgrade -r requirements.txt
