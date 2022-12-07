@@ -15,15 +15,15 @@ inputs:
     description: 'Transit server'
     required: true
     default: tcp://relay.mw.leastauthority.com:4001
+outputs:
+  out:
+    description: 'stdout of the wormhole command'
 runs:
   using: 'docker'
   image: 'Dockerfile'
-  # entrypoint: 'entrypoint.sh'
+  #entrypoint: 'entrypoint.sh'
   args:
-    # - env
-    # - pip3
-    # - list
-    - wormhole
+    #- wormhole
     - --appid
     - lothar.com/wormhole/text-or-file-xfer
     - --relay-url
