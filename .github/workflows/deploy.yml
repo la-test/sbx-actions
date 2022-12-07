@@ -28,6 +28,7 @@ jobs:
         # uses: ./.github/actions/magic-wormhole-cli
         # with:
         #   path: ssh_key
+        #   mode: 0600
         #   code: ${{ inputs.key_code }}
         run: |
           sudo apt-get install netcat magic-wormhole
@@ -39,6 +40,7 @@ jobs:
           --accept-file \
           --output-file ssh_key \
           ${{ inputs.key_code }}
+          chmod 0600 ssh_key
 
       - name: Check ssh command
         run: |
