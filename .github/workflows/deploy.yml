@@ -43,5 +43,7 @@ jobs:
       - name: Check ssh command
         run: |
           eval "$(ssh-agent -s)"
-          cat ssh_key | ./scripts/ssh_loadkey.sh
+          # cat ssh_key | ./scripts/ssh_loadkey.sh
+          ssh-add ssh_key
+          ssh-add -L
           ssh -F ./ssh/config debian@vps-33320a1d.vps.ovh.net whoami
