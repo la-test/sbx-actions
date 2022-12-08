@@ -6,19 +6,20 @@ on:
       - main
     paths:
       - 'src/**'
-      - 'sripts/**'
+      - 'scripts/**'
       - 'ssh/**'
       - '.github/workflows/integrate.yml'
   pull_request:
     paths:
       - 'src/**'
-      - 'sripts/**'
+      - 'scripts/**'
       - 'ssh/**'
       - '.github/workflows/integrate.yml'
     types:
       - opened
       - reopened
       - edited
+      - review_requested
 
 jobs:
   integrate:
