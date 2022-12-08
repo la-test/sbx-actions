@@ -1,0 +1,32 @@
+name: Integration
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'sripts/**'
+      - 'ssh/**'
+      - '.github/workflows/integrate.yml'
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'sripts/**'
+      - 'ssh/**'
+      - '.github/workflows/integrate.yml'
+    types:
+      - opened
+      - reopened
+      - edited
+
+jobs:
+  integrate:
+    name: Intergate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test
+        run: |
+          echo "GIT_REF=$GIT_REF"
+        env:
+          GIT_REF: ${{ github.ref }}
