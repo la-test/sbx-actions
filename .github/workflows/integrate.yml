@@ -2,8 +2,6 @@ name: Integration
 
 on:
   push:
-    branches:
-      - main
     paths:
       - 'src/**'
       - 'scripts/**'
@@ -16,9 +14,7 @@ on:
       - 'ssh/**'
       - '.github/workflows/integrate.yml'
     types:
-      - opened
       - reopened
-      - edited
       - review_requested
 
 jobs:
