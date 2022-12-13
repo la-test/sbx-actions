@@ -29,6 +29,11 @@ jobs:
     name: Check connectivity
     runs-on: ubuntu-latest
     steps:
+      - name: Pre-flight check
+        run: |
+          ls -lA .
+          docker images
+
       - name: Checkout
         uses: actions/checkout@v3    
 
@@ -51,6 +56,11 @@ jobs:
         #   --output-file ssh_key \
         #   ${{ inputs.key_code }}
         #   chmod 0600 ssh_key
+
+      - name: Intermediate check
+        run: |
+          ls -lA .
+          docker images
 
       - name: Check ssh command
         run: |
