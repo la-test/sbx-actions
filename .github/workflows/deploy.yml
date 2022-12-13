@@ -24,6 +24,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3    
 
+      - name: Install Wormhole
+        run: |
+          sudo apt-get install magic-wormhole
+
       - name: Get ssh key
         # uses: ./.github/actions/magic-wormhole-cli
         # with:
@@ -31,7 +35,6 @@ jobs:
         #   mode: 0600
         #   code: ${{ inputs.key_code }}
         run: |
-          sudo apt-get install magic-wormhole
           wormhole \
           --relay-url ${{ inputs.mailbox }} \
           --transit-helper ${{ inputs.transit }} \
