@@ -2,9 +2,7 @@ name: Integration
 
 on:
   push:
-    paths: ["src/**", "scripts/**", "ssh/**", ".github/workflows/integrate.yml"]
   pull_request:
-    paths: ["src/**", "scripts/**", "ssh/**", ".github/workflows/integrate.yml"]
 
 jobs:
   pre:
@@ -19,6 +17,7 @@ jobs:
         uses: fkirc/skip-duplicate-actions@v5
         with:
           concurrent_skipping: 'same_content_newer'
+          paths: '["src/**", "scripts/**", "ssh/**", ".github/workflows/integrate.yml"]'
 
   integrate:
     name: Intergate
