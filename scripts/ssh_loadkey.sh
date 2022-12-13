@@ -23,7 +23,7 @@ SSH_PUBKEY="${SSH_PRIVKEY}.pub)"
 # Clean exit
 on_exit () {
   rm -f "${SSH_ASKPASS}" "${SSH_PRIVKEY}" "${SSH_PUBKEY}"
-  #ssh-add -d "${SSH_PRIVKEY}"
+#  ssh-add -d "${SSH_PRIVKEY}"
   cd "${__CWD}"
 }
 
