@@ -28,6 +28,7 @@ runs:
     - --transit-helper
     - ${{ inputs.transit }}
     - receive
+    - --hide-progress
     - --accept-file
     - --output-file
     - ${{ inputs.path }}
