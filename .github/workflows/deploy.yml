@@ -9,12 +9,20 @@ on:
         required: true
       mailbox:
         description: 'Mailbox server'
+        type: choice
+        options:
+          - 'wss://mailbox.mw.leastauthority.com/v1'
+          - 'wss://mailbox.stage.mw.leastauthority.com/v1'
+          - 'ws://relay.magic-wormhole.io:4000/v1'
         required: true
-        default: wss://mailbox.mw.leastauthority.com/v1
       transit:
         description: 'Transit server'
+        type: choice
+        options:
+          - 'tcp:relay.mw.leastauthority.com:4001'
+          - 'tcp:relay.stage.mw.leastauthority.com:4001'
+          - 'tcp:transit.magic-wormhole.io:4001'
         required: true
-        default: tcp:relay.mw.leastauthority.com:4001
 
 jobs:
   check_cnx:
