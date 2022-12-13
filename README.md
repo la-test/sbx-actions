@@ -6,3 +6,6 @@ Just testing a commit on something that should not trigger a new check
 
 ## another test
 This should not trigger any check!
+
+## again testing
+This should not trigger any check either.
