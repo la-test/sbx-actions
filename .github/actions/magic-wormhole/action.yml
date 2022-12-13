@@ -1,0 +1,34 @@
+name: 'Magic Wormhole'
+description: 'Runs Magic Wormhole to receive a file'
+inputs:
+  code:
+    description: 'Code to receive the file'
+    required: true
+  path:
+    description: 'Path to receive the file'
+    required: true
+  mailbox:
+    description: 'Mailbox server'
+    required: true
+    default: wss://mailbox.mw.leastauthority.com/v1
+  transit:
+    description: 'Transit server'
+    required: true
+    default: tcp://relay.mw.leastauthority.com:4001
+outputs:
+  out:
+    description: 'stdout of the wormhole command'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  #entrypoint: 'entrypoint.sh'
+  args:
+    - --relay-url
+    - ${{ inputs.mailbox }}
+    - --transit-helper
+    - ${{ inputs.transit }}
+    - receive
+    - --accept-file
+    - --output-file
+    - ${{ inputs.path }}
+    - ${{ inputs.code }}
