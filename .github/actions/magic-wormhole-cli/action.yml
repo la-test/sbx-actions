@@ -23,9 +23,6 @@ runs:
   image: 'Dockerfile'
   #entrypoint: 'entrypoint.sh'
   args:
-    #- wormhole
-    - --appid
-    - lothar.com/wormhole/text-or-file-xfer
     - --relay-url
     - ${{ inputs.mailbox }}
     - --transit-helper
