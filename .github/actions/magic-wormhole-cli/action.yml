@@ -16,8 +16,10 @@ inputs:
     required: true
     default: tcp://relay.mw.leastauthority.com:4001
 outputs:
-  out:
-    description: 'stdout of the wormhole command'
+  # out:
+  #   description: 'stdout of the wormhole command'
+  err:
+    description: 'stderr of the wormhole command'
 runs:
   using: 'docker'
   image: 'Dockerfile'

@@ -1,4 +1,4 @@
 #!/bin/sh -l
 
-echo -n 'out=' >> $GITHUB_OUTPUT
-wormhole "${@}" >> $GITHUB_OUTPUT
+echo -n 'err=' >> $GITHUB_OUTPUT
+wormhole "${@}" 2>> $GITHUB_OUTPUT
