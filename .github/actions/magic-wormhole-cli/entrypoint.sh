@@ -21,7 +21,7 @@ ERR=$(cat "${TMP_ERR}" | tr -d '\n' | tr -d "'" | tr ' ' '_')
 echo "out='${OUT}'" >> $GITHUB_OUTPUT
 
 # Pass output named err from last line of stderr
-echo "err='${ERR}'" >> $GITHUB_OUTPUT
+#echo "err='${ERR}'" >> $GITHUB_OUTPUT
 
 # Preapre step summary from stderr
 cat ${TMP_ERR} >> $GITHUB_STEP_SUMMARY
