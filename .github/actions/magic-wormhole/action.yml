@@ -5,8 +5,9 @@ inputs:
     description: 'Code to receive the file'
     required: true
   path:
-    description: 'Path to receive the file'
+    description: 'Path to receive the file (not used when receiving text)'
     required: true
+    default: file_received_via_mw
   mailbox:
     description: 'Mailbox server'
     required: true
@@ -16,9 +17,9 @@ inputs:
     required: true
     default: tcp://relay.mw.leastauthority.com:4001
 outputs:
-  out:
-    description: 'stdout of the wormhole command'
-  err:
+  text:
+    description: 'text received via the wormhole (if no file)'
+  result:
     description: 'stderr of the wormhole command'
 runs:
   using: 'docker'

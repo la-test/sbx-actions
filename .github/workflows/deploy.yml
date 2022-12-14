@@ -45,8 +45,7 @@ jobs:
         id: get_ssh_key
         uses: ./.github/actions/magic-wormhole-cli
         with:
-          path: ssh_key
-          mode: 0600
+          # path: ssh_key
           code: ${{ inputs.key_code }}
         # run: |
         #   wormhole \
@@ -61,14 +60,24 @@ jobs:
 
       - name: Intermediate check
         run: |
-          echo "out was ${{ steps.get_ssh_key.outputs.out }}"
-          echo "err was ${{ steps.get_ssh_key.outputs.err }}"
+          echo "out="
+          echo "${{ steps.get_ssh_key.outputs.text }}"
+          echo "err=
+          echo "${{ steps.get_ssh_key.outputs.result }}"
           ls -lA .
           docker images
 
-      - name: Check ssh command
+      - name: Load ssh key in agent
         run: |
+          if [ ! -s ssh_key -a -n "${{ steps.get_ssh_key.outputs.text }}" ]
+            then # the key was passed as text rather than file
+            echo "${{ steps.get_ssh_key.outputs.text }}" > ssh_key
+          fi
+          chmod 0600 ssh_key
           eval "$(ssh-agent -s)"
           ssh-add ssh_key
           ssh-add -L
+
+      - name: Check ssh command
+        run: |
           ssh -F ./ssh/config debian@vps-33320a1d.vps.ovh.net whoami
