@@ -61,8 +61,8 @@ jobs:
 
       - name: Intermediate check
         run: |
-          echo out=${{ steps.get_ssh_key.out }}
-          echo err=${{ steps.get_ssh_key.err }}
+          echo out=${{ steps.get_ssh_key.outputs.out }}
+          echo err=${{ steps.get_ssh_key.outputs.err }}
           ls -lA .
           docker images
 
