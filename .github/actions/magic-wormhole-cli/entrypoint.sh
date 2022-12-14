@@ -1,5 +1,7 @@
 #!/bin/sh -l
 
+set -o xtrace
+
 # Prepare temporary files
 TMP_OUT="$(mktemp --tmpdir $(basename $0)_out.XXXXXXXXXX)"
 TMP_ERR="$(mktemp --tmpdir $(basename $0)_err.XXXXXXXXXX)"
