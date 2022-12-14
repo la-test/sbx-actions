@@ -60,11 +60,13 @@ jobs:
 
       - name: Intermediate check
         run: |
-          echo "out="
-          echo "${{ steps.get_ssh_key.outputs.text }}"
-          echo "err=
+          echo "Wormhole result:"
           echo "${{ steps.get_ssh_key.outputs.result }}"
+          echo
+          echo "Directory content:"
           ls -lA .
+          echo
+          echo "Docker local repository:"
           docker images
 
       - name: Load ssh key in agent
