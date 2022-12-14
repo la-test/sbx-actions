@@ -14,15 +14,17 @@ TMP_ERR="err.tmp"
 # Call wormhole with all arguments
 wormhole "${@}" > ${TMP_OUT} 2> ${TMP_ERR}
 
-# Prepare output named out from stdout
-echo -n 'out=' >> $GITHUB_OUTPUT
-cat ${TMP_OUT} | tr -d '\n' >> $GITHUB_OUTPUT
-#echo >> $GITHUB_OUTPUT
+# Pass output named out from stdout
+{
+    echo -n 'out='
+    cat ${TMP_OUT} | tr -d '\n'
+} >> $GITHUB_OUTPUT
 
-# Prepare output named err from last line of stderr
-#echo -n 'err=' >> $GITHUB_OUTPUT
-#tail -1 ${TMP_ERR} | tr -d '\n' >> $GITHUB_OUTPUT
-#echo >> $GITHUB_OUTPUT
+# Pass output named err from last line of stderr
+{
+    echo -n 'err='
+    tail -1 ${TMP_ERR} | tr -d '\n'
+} >> $GITHUB_OUTPUT
 
 # Preapre step summary from stderr
 cat ${TMP_ERR} >> $GITHUB_STEP_SUMMARY
