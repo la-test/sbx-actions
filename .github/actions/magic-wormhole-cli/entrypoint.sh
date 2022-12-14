@@ -12,19 +12,16 @@ TMP_ERR="err.tmp"
 # trap "rm -f ${TMP_OUT} ${TMP_ERR}" EXIT
 
 # Call wormhole with all arguments
-wormhole "${@}" > ${TMP_OUT} 2> ${TMP_ERR}
+wormhole "${@}" > "${TMP_OUT}" 2> "${TMP_ERR}"
+
+OUT=$(cat "${TMP_OUT}" | tr -d '\n')
+ERR=$(tail -1 "${TMP_ERR}" | tr -d '\n')
 
 # Pass output named out from stdout
-{
-    echo -n 'out='
-    cat ${TMP_OUT} | tr -d '\n'
-} >> $GITHUB_OUTPUT
+echo "out=${OUT}" >> $GITHUB_OUTPUT
 
 # Pass output named err from last line of stderr
-{
-    echo -n 'err='
-    tail -1 ${TMP_ERR} | tr -d '\n'
-} >> $GITHUB_OUTPUT
+echo "err=${ERR}" >> $GITHUB_OUTPUT
 
 # Preapre step summary from stderr
 cat ${TMP_ERR} >> $GITHUB_STEP_SUMMARY
