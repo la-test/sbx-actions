@@ -15,7 +15,7 @@ TMP_ERR="err.tmp"
 wormhole "${@}" > "${TMP_OUT}" 2> "${TMP_ERR}"
 
 OUT=$(tail -2 "${TMP_OUT}" | head -1)
-ERR=$(tail -2 "${TMP_ERR}" | head -1)
+ERR=$(cat "${TMP_ERR}")
 
 # Pass output named out from stdout
 echo "out=${OUT}" >> $GITHUB_OUTPUT
