@@ -14,11 +14,12 @@ TMP_ERR="err.tmp"
 # Call wormhole with all arguments
 wormhole "${@}" > "${TMP_OUT}" 2> "${TMP_ERR}"
 
-OUT=$(cat "${TMP_OUT}" | tr -d '\n' | tr -d "'" | tr ' ' '_')
-ERR=$(cat "${TMP_ERR}" | tr -d '\n' | tr -d "'" | tr ' ' '_')
+OUT=$(cat "${TMP_OUT}" | tr -d '\n')
+ERR=$(cat "${TMP_ERR}" | tr -d '\n')
 
 # Pass output named out from stdout
-echo "out='${OUT}'" >> $GITHUB_OUTPUT
+echo "out=damnit" >> $GITHUB_OUTPUT
+#echo "out='${OUT}'" >> $GITHUB_OUTPUT
 
 # Pass output named err from last line of stderr
 #echo "err='${ERR}'" >> $GITHUB_OUTPUT
