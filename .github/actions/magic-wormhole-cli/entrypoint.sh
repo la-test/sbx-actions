@@ -36,7 +36,7 @@ if [ ! -s "${OUTPUT_FILE}" ]; then
 fi
 
 # Change ownership of the output-file for the next step
-chown runner:docker "${OUTPUT_FILE}"
+chown --reference . "${OUTPUT_FILE}"
 
 # Pass stderr as result
 echo "result<<$(basename "${TMP_ERR}")" >> $GITHUB_OUTPUT

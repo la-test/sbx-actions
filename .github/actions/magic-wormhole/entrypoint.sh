@@ -27,8 +27,7 @@ if [ ! -s "${OUTPUT_FILE}" ]; then
 fi
 
 # Change ownership of the output-file for the next step
-ls -lA
-chown 1000:1000 "${OUTPUT_FILE}"
+chown --reference . "${OUTPUT_FILE}"
 
 # Append some info based on the exit code in result and summary
 if [ $RET -eq 0 ]; then
