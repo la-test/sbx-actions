@@ -9,41 +9,66 @@ on:
         required: true
       mailbox:
         description: 'Mailbox server'
+        type: choice
+        options:
+          - 'wss://mailbox.mw.leastauthority.com/v1'
+          - 'wss://mailbox.stage.mw.leastauthority.com/v1'
+          - 'ws://relay.magic-wormhole.io:4000/v1'
         required: true
-        default: wss://mailbox.mw.leastauthority.com/v1
       transit:
         description: 'Transit server'
+        type: choice
+        options:
+          - 'tcp:relay.mw.leastauthority.com:4001'
+          - 'tcp:relay.stage.mw.leastauthority.com:4001'
+          - 'tcp:transit.magic-wormhole.io:4001'
         required: true
-        default: tcp:relay.mw.leastauthority.com:4001
 
 jobs:
   check_cnx:
     name: Check connectivity
     runs-on: ubuntu-latest
     steps:
+      - name: Pre-flight check
+        run: |
+          ls -lA .
+          docker images
+
       - name: Checkout
         uses: actions/checkout@v3    
 
+      # - name: Install Wormhole
+      #   run: |
+      #     sudo apt-get install magic-wormhole
+
       - name: Get ssh key
-        # uses: ./.github/actions/magic-wormhole-cli
-        # with:
-        #   path: ssh_key
-        #   mode: 0600
-        #   code: ${{ inputs.key_code }}
+        id: get_ssh_key
+        uses: ./.github/actions/magic-wormhole
+        with:
+          path: ssh_key
+          code: ${{ inputs.key_code }}
+
+      - name: Intermediate check
         run: |
-          sudo apt-get install magic-wormhole
-          wormhole \
-          --relay-url ${{ inputs.mailbox }} \
-          --transit-helper ${{ inputs.transit }} \
-          receive \
-          --accept-file \
-          --output-file ssh_key \
-          ${{ inputs.key_code }}
+          echo "Wormhole result:"
+          echo "${{ steps.get_ssh_key.outputs.result }}"
+          echo
+          echo "Directory content:"
+          ls -lA .
+          echo
+          echo "Docker local repository:"
+          docker images
+          echo "External IP address"
+          curl -s 'https://ipv6.he.net/' | grep -Po '(?<=Your IP address is: ).+'
+
+      - name: Load ssh key in agent
+        run: |
+          eval "$(ssh-agent -s)"
           chmod 0600 ssh_key
+          ssh-add ssh_key
+          ssh-add -L
+          echo "SSH_AUTH_SOCK=${SSH_AUTH_SOCK}" >> $GITHUB_ENV
 
       - name: Check ssh command
         run: |
-          eval "$(ssh-agent -s)"
-          ssh-add ssh_key
-          ssh-add -L
-          ssh -F ./ssh/config debian@vps-33320a1d.vps.ovh.net whoami
+          ssh -vvv -F ./ssh/config debian@vps-33320a1d.vps.ovh.net whoami
