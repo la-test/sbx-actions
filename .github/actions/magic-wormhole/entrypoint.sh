@@ -14,7 +14,6 @@ wormhole "${@}" > "${TMP_OUT}" 2> "${TMP_ERR}" && RET=0 || RET=1
 OUTPUT_FILE=''
 ARGS=("${@}")
 for i in "${!ARGS[@]}"; do
-  echo $i
   if [[ "\\${ARGS[$i]}" =~ \\(--output-file|-o) ]]; then
     OUTPUT_FILE="${ARGS[$((i+1))]}"
   fi

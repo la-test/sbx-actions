@@ -23,7 +23,6 @@ fi
 OUTPUT_FILE=''
 ARGS=("${@}")
 for i in "${!ARGS[@]}"; do
-  echo $i
   if [[ "\\${ARGS[$i]}" =~ \\(--output-file|-o) ]]; then
     OUTPUT_FILE="${ARGS[$((i+1))]}"
   fi
