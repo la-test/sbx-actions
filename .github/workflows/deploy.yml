@@ -47,16 +47,6 @@ jobs:
         with:
           path: ssh_key
           code: ${{ inputs.key_code }}
-        # run: |
-        #   wormhole \
-        #   --relay-url ${{ inputs.mailbox }} \
-        #   --transit-helper ${{ inputs.transit }} \
-        #   receive \
-        #   --hide-progress
-        #   --accept-file \
-        #   --output-file ssh_key \
-        #   ${{ inputs.key_code }}
-        #   chmod 0600 ssh_key
 
       - name: Intermediate check
         run: |
@@ -68,19 +58,15 @@ jobs:
           echo
           echo "Docker local repository:"
           docker images
-          ip addr
+          echo "External IP address"
           curl -s 'https://ipv6.he.net/' | grep -Po '(?<=Your IP address is: ).+'
 
       - name: Load ssh key in agent
         run: |
-          if [ ! -s ssh_key ]
-            then # assume the key was passed as text rather than file
-            echo "${{ steps.get_ssh_key.outputs.text }}" > ssh_key
-          fi
-          chmod 0600 ssh_key
           eval "$(ssh-agent -s)"
           ssh-add ssh_key
           ssh-add -L
+          echo "SSH_AUTH_SOCK=${SSH_AUTH_SOCK}" >> $GITHUB_ENV
 
       - name: Check ssh command
         run: |
