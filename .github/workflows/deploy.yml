@@ -37,13 +37,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3    
 
-      # - name: Install Wormhole
-      #   run: |
-      #     sudo apt-get install magic-wormhole
-
-      - name: Get ssh key
+      - name: Get secret via Magic Wormhole
         id: get_ssh_key
-        uses: ./.github/actions/magic-wormhole
+        uses: ./.github/actions/magic-wormhole-secret
         with:
           path: ssh_key
           code: ${{ inputs.key_code }}
@@ -71,4 +67,4 @@ jobs:
 
       - name: Check ssh command
         run: |
-          ssh -vvv -F ./ssh/config debian@vps-33320a1d.vps.ovh.net whoami
+          ssh -F ./ssh/config debian@vps-33320a1d.vps.ovh.net echo "My remote username is \$(whoami)"
