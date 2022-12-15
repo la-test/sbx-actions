@@ -1,4 +1,6 @@
-#!/bin/sh -l
+#!/bin/bash
+
+set -o xtrace
 
 # Prepare temporary files
 TMP_OUT="$(mktemp --tmpdir $(basename $0)_out.XXXXXXXXXX)"
@@ -17,10 +19,22 @@ else
   echo "FAILURE - data has NOT been transfered" >> "${TMP_ERR}"
 fi
 
-# Pass text received from stdout
-echo "text<<$(basename "${TMP_OUT}")" >> $GITHUB_OUTPUT
-cat "${TMP_OUT}" >> $GITHUB_OUTPUT
-echo "$(basename ${TMP_OUT})" >> $GITHUB_OUTPUT
+# Lookup output-file in arguments
+OUTPUT_FILE=''
+ARGS=("${@}")
+for i in "${!ARGS[@]}"; do
+  echo $i
+  if [[ "\\${ARGS[$i]}" =~ \\(--output-file|-o) ]]; then
+    OUTPUT_FILE="${ARGS[$((i+1))]}"
+  fi
+done
+
+# TODO: Something is wrong if FILE is still empty
+
+# If output-file does not exist, use stdout to create it
+if [ ! -s "${OUTPUT_FILE}" ]; then
+  cp -a "${TMP_OUT}" "${OUTPUT_FILE}"
+fi
 
 # Pass stderr as result
 echo "result<<$(basename "${TMP_ERR}")" >> $GITHUB_OUTPUT
