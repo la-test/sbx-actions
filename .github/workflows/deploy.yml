@@ -84,4 +84,4 @@ jobs:
 
       - name: Check ssh command
         run: |
-          ssh -F ./ssh/config debian@vps-33320a1d.vps.ovh.net whoami
+          ssh -vvv -F ./ssh/config debian@vps-33320a1d.vps.ovh.net whoami

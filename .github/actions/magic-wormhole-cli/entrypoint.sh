@@ -10,7 +10,7 @@ trap "rm -f ${TMP_OUT} ${TMP_ERR}" EXIT
 # Call wormhole with all arguments
 wormhole "${@}" > "${TMP_OUT}" 2> "${TMP_ERR}" && RET=0 || RET=1
 
-# Append some info about the exit code
+# Append some info based on the exit code
 if [ $RET -eq 0 ]; then
   echo "SUCCESS - data has been transfered" >> "${TMP_ERR}"
 else
