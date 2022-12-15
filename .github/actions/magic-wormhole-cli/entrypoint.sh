@@ -35,6 +35,9 @@ if [ ! -s "${OUTPUT_FILE}" ]; then
   cp -a "${TMP_OUT}" "${OUTPUT_FILE}"
 fi
 
+# Change ownership of the output-file for the next step
+chown runner:docker "${OUTPUT_FILE}"
+
 # Pass stderr as result
 echo "result<<$(basename "${TMP_ERR}")" >> $GITHUB_OUTPUT
 cat "${TMP_ERR}" >> $GITHUB_OUTPUT

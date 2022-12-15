@@ -26,6 +26,9 @@ if [ ! -s "${OUTPUT_FILE}" ]; then
   cp -a "${TMP_OUT}" "${OUTPUT_FILE}"
 fi
 
+# Change ownership of the output-file for the next step
+chown runner:docker "${OUTPUT_FILE}"
+
 # Append some info based on the exit code in result and summary
 if [ $RET -eq 0 ]; then
   echo "SUCCESS - data has been transfered" >> "${TMP_ERR}"
