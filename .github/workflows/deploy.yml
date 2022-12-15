@@ -71,8 +71,8 @@ jobs:
 
       - name: Load ssh key in agent
         run: |
-          if [ ! -s ssh_key -a -n "${{ steps.get_ssh_key.outputs.text }}" ]
-            then # the key was passed as text rather than file
+          if [ ! -s ssh_key ]
+            then # assume the key was passed as text rather than file
             echo "${{ steps.get_ssh_key.outputs.text }}" > ssh_key
           fi
           chmod 0600 ssh_key
