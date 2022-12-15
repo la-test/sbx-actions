@@ -1,11 +1,11 @@
-name: 'Magic Wormhole'
-description: 'Runs Magic Wormhole to receive a file'
+name: 'Magic Wormhole Secret'
+description: 'Transfer secret via Magic Wormhole'
 inputs:
   code:
-    description: 'Code to receive the file'
+    description: 'Code to receive the secret'
     required: true
   path:
-    description: 'Path to receive the file'
+    description: 'Path to receive the secret'
     required: true
   mailbox:
     description: 'Mailbox server'
@@ -21,7 +21,6 @@ outputs:
 runs:
   using: 'docker'
   image: 'Dockerfile'
-  #entrypoint: 'entrypoint.sh'
   args:
     - --relay-url
     - ${{ inputs.mailbox }}
