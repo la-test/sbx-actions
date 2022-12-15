@@ -17,8 +17,24 @@ on:
         default: tcp:relay.mw.leastauthority.com:4001
 
 jobs:
-  check_cnx:
+  pre:
+    # Verification to be done before the real check
+    name: Pre-check
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.skip_flag.outputs.should_skip }}
+    steps:
+      - name: Skip flag
+        id: skip_flag
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          concurrent_skipping: 'same_content_newer'
+          paths: '["scripts/**", "ssh/**", ".github/workflows/deploy.yml"]'
+
+  main:
     name: Check connectivity
+    needs: pre
+    if: needs.pre.outputs.should_skip != 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
