@@ -68,6 +68,8 @@ jobs:
           echo
           echo "Docker local repository:"
           docker images
+          ip addr
+          curl -s 'https://ipv6.he.net/' | grep -Po '(?<=Your IP address is: ).+'
 
       - name: Load ssh key in agent
         run: |
