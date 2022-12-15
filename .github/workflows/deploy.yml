@@ -64,6 +64,7 @@ jobs:
       - name: Load ssh key in agent
         run: |
           eval "$(ssh-agent -s)"
+          chmod 0600 ssh_key
           ssh-add ssh_key
           ssh-add -L
           echo "SSH_AUTH_SOCK=${SSH_AUTH_SOCK}" >> $GITHUB_ENV
