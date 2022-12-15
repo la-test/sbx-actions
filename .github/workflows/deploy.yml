@@ -43,7 +43,7 @@ jobs:
 
       - name: Get ssh key
         id: get_ssh_key
-        uses: ./.github/actions/magic-wormhole-cli
+        uses: ./.github/actions/magic-wormhole
         with:
           path: ssh_key
           code: ${{ inputs.key_code }}
