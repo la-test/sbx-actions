@@ -29,7 +29,7 @@ jobs:
     name: Check connectivity
     runs-on: ubuntu-latest
     env:
-      TMP_DISK: ./TMP_DISK
+      TMP_DISK: ./tmp_disk
       TMP_SIZE: 4M
     steps:
       - name: Pre-flight check
@@ -43,7 +43,6 @@ jobs:
       - name: Create temp disk
         id: mk_tmp_disk
         run: |
-          set -o xtrace
           sudo mkdir -p "${TMP_DISK}"
           sudo dd if=/dev/zero of=${TMP_DISK}.img bs=${TMP_SIZE} count=1
           KEY=$(openssl genrsa 512)
@@ -54,10 +53,11 @@ jobs:
           --cipher=aes-xts-plain64 \
           --key-file - \
           "${TMP_DISK}.img"
-          echo ${KEY} | sudo cryptsetup luksOpen \
+          echo ${KEY} | sudo cryptsetup open \
           "${TMP_DISK}.img" \
-          --key-file - \
-          luks-container-crypt
+          luks-container-crypt \
+          --type=luks1 \
+          --key-file -
           sudo mkfs.ext2 /dev/mapper/luks-container-crypt
           sudo mount /dev/mapper/luks-container-crypt "${TMP_DISK}"
 
@@ -65,7 +65,7 @@ jobs:
         id: get_ssh_key
         uses: ./.github/actions/magic-wormhole-secret
         with:
-          path: ssh_key
+          path: ${{ env.TMP_DISK }}/ssh_key
           code: ${{ inputs.key_code }}
 
       - name: Intermediate check
@@ -74,7 +74,7 @@ jobs:
           echo "${{ steps.get_ssh_key.outputs.result }}"
           echo
           echo "Directory content:"
-          ls -lA .
+          ls -lA "${TMP_DISK}"
           echo
           echo "Docker local repository:"
           docker images
@@ -84,10 +84,15 @@ jobs:
       - name: Load ssh key in agent
         run: |
           eval "$(ssh-agent -s)"
-          chmod 0600 ssh_key
-          ssh-add ssh_key
+          chmod 0600 "${TMP_DISK}/ssh_key"
+          ssh-add "${TMP_DISK}/ssh_key"
           ssh-add -L
           echo "SSH_AUTH_SOCK=${SSH_AUTH_SOCK}" >> $GITHUB_ENV
+
+      - name: Cleanup temp disk
+        run: |
+          sudo umount "${TMP_DISK}"
+          sudo cryptsetup close --type=luks1 luks-container-crypt
 
       - name: Check ssh command
         run: |
