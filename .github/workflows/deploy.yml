@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TMP_DISK: ./TMP_DISK
-      TMP_SIZE: 1M
+      TMP_SIZE: 4M
     steps:
       - name: Pre-flight check
         run: |
@@ -50,8 +50,11 @@ jobs:
           --type=luks1 \
           --hash=sha512 \
           --cipher=aes-xts-plain64 \
+          --key-file - \
           ${TMP_DISK}.img
-          sudo cryptsetup luksDump \
+          echo ${KEY} | \
+          sudo cryptsetup luksOpen \
+          --key-file - \
           ${TMP_DISK}.img
 
       - name: Get secret via Magic Wormhole
