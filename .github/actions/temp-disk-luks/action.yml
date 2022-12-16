@@ -1,0 +1,64 @@
+name: 'Temp Disk LUKS'
+description: 'Create a temporary disk with LUKS encryption'
+inputs:
+  size:
+    description: Disk size in MB (>= 4)
+    required: true
+    default: 4
+  root:
+    description: 'Root path for the mount point (default = working directory)'
+    required: true
+    default: '.'
+outputs:
+  uuid:
+    description: 'Device uuid of the disk'
+    value: ${{ steps.prepare.outputs.uuid }}
+  mnt:
+    description: 'Mount path of the disk (=<root>/<uuid>)'
+    value: ${{ steps.prepare.outputs.mnt }}
+runs:
+  using: "composite"
+  steps:
+      - name: Prepare
+        id: prepare
+        shell: bash
+        run: |
+          UUID="$(uuidgen)"
+          MNT="${{ inputs.root }}/${UUID}"
+          sudo mkdir -p "${MNT}"
+          sudo dd if=/dev/zero of="${MNT}.img" bs=1M count=${{ inputs.size }} 2> /dev/null
+          echo "uuid=${UUID}" >> $GITHUB_OUTPUT
+          echo "mnt=${MNT}" >> $GITHUB_OUTPUT
+          echo ":rocket: Temp device prepared" >> $GITHUB_STEP_SUMMARY
+
+      - name: Create
+        id: create
+        shell: bash
+        run: |
+          KEY=$(openssl genrsa 512 2> /dev/null)
+          # Format LUKS
+          echo ${KEY} | \
+          sudo cryptsetup luksFormat \
+          --type=luks1 \
+          --hash=sha512 \
+          --cipher=aes-xts-plain64 \
+          --key-file - \
+          "${{ steps.prepare.outputs.mnt }}.img" \
+          && echo ":heavy_check_mark: Temp device format succeeded" >> $GITHUB_STEP_SUMMARY \
+          || { echo ":x: Temp disk luks format failed" >> $GITHUB_STEP_SUMMARY; exit 1; }
+          # Open LUKS
+          echo ${KEY} | sudo cryptsetup open \
+          "${{ steps.prepare.outputs.mnt }}.img" \
+          ${{ steps.prepare.outputs.uuid }} \
+          --type=luks1 \
+          --key-file - \
+          && echo ":heavy_check_mark: Temp disk luks open succeeded" >> $GITHUB_STEP_SUMMARY \
+          || { echo ":x: Temp disk luks open failed" >> $GITHUB_STEP_SUMMARY; exit 1; }
+          # Make FS
+          sudo mkfs.ext2 /dev/mapper/${{ steps.prepare.outputs.uuid }} \
+          && echo ":heavy_check_mark: Temp disk fs succeeded" >> $GITHUB_STEP_SUMMARY \
+          || { echo ":x: Temp disk fs failed" >> $GITHUB_STEP_SUMMARY; exit 1; }
+          # Mount FS
+          sudo mount /dev/mapper/${{ steps.prepare.outputs.uuid }} "${{ steps.prepare.outputs.mnt }}" \
+          && echo ":heavy_check_mark: Temp disk mount succeeded" >> $GITHUB_STEP_SUMMARY \
+          || { echo ":heavy_check_mark: Temp disk mount failed" >> $GITHUB_STEP_SUMMARY; exit 1; } 
