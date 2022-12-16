@@ -43,6 +43,8 @@ jobs:
       - name: Create temp disk
         id: mk_tmp_disk
         run: |
+          set -o xtrace
+          sudo mkdir -p "${TMP_DISK}"
           sudo dd if=/dev/zero of=${TMP_DISK}.img bs=${TMP_SIZE} count=1
           KEY=$(openssl genrsa 512)
           echo ${KEY} | \
@@ -51,11 +53,13 @@ jobs:
           --hash=sha512 \
           --cipher=aes-xts-plain64 \
           --key-file - \
-          ${TMP_DISK}.img
-          echo ${KEY} | \
-          sudo cryptsetup luksOpen \
+          "${TMP_DISK}.img"
+          echo ${KEY} | sudo cryptsetup luksOpen \
+          "${TMP_DISK}.img" \
           --key-file - \
-          ${TMP_DISK}.img
+          luks-container-crypt
+          sudo mkfs.ext2 /dev/mapper/luks-container-crypt
+          sudo mount /dev/mapper/luks-container-crypt "${TMP_DISK}"
 
       - name: Get secret via Magic Wormhole
         id: get_ssh_key
