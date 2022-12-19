@@ -37,11 +37,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3    
 
+      - name: Create temp disk
+        id: mk_tmp_disk
+        uses: ./.github/actions/temp-disk-luks
+        # with:
+        #   root: .
+        #   size: 4
+
       - name: Get secret via Magic Wormhole
         id: get_ssh_key
         uses: ./.github/actions/magic-wormhole-secret
         with:
-          path: ssh_key
+          path: ${{ format('{0}/{1}', steps.mk_tmp_disk.outputs.mnt, '/ssh_key') }}
           code: ${{ inputs.key_code }}
 
       - name: Intermediate check
@@ -50,7 +57,7 @@ jobs:
           echo "${{ steps.get_ssh_key.outputs.result }}"
           echo
           echo "Directory content:"
-          ls -lA .
+          ls -lA "${{ steps.mk_tmp_disk.outputs.mnt }}"
           echo
           echo "Docker local repository:"
           docker images
@@ -60,10 +67,15 @@ jobs:
       - name: Load ssh key in agent
         run: |
           eval "$(ssh-agent -s)"
-          chmod 0600 ssh_key
-          ssh-add ssh_key
+          chmod 0600 "${{ steps.mk_tmp_disk.outputs.mnt }}/ssh_key"
+          ssh-add "${{ steps.mk_tmp_disk.outputs.mnt }}/ssh_key"
           ssh-add -L
           echo "SSH_AUTH_SOCK=${SSH_AUTH_SOCK}" >> $GITHUB_ENV
+
+      - name: Cleanup temp disk
+        run: |
+          sudo umount "${{ steps.mk_tmp_disk.outputs.mnt }}"
+          sudo cryptsetup close ${{ steps.mk_tmp_disk.outputs.uuid }}
 
       - name: Check ssh command
         run: |
