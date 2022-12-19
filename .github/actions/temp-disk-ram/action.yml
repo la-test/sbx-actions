@@ -1,0 +1,36 @@
+name: 'Temp Disk RAM'
+description: 'Create a temporary disk in memory'
+inputs:
+  size:
+    description: Disk size in MB (>= 1)
+    required: true
+    default: 1
+  root:
+    description: 'Root path for the mount point (default = working directory)'
+    required: true
+    default: '.'
+outputs:
+  uuid:
+    description: 'Device uuid of the disk'
+    value: ${{ steps.create.outputs.uuid }}
+  mnt:
+    description: 'Mount path of the disk (=<root>/<uuid>)'
+    value: ${{ steps.create.outputs.mnt }}
+runs:
+  using: "composite"
+  steps:
+      - name: Create
+        id: create
+        shell: bash
+        run: |
+          UUID="$(uuidgen)"
+          MNT="${{ inputs.root }}/${UUID}"
+          echo ":rocket: Temp disk ${MNT} creation started" >> $GITHUB_STEP_SUMMARY
+          sudo mkdir -p "${MNT}" \
+          && echo ":heavy_check_mark: Temp disk mount point creation succeeded" >> $GITHUB_STEP_SUMMARY \
+          || { echo ":x: Temp disk  mount point creation failed" >> $GITHUB_STEP_SUMMARY; exit 1; }
+          sudo mount -o size=${{ inputs.size }},uid=$(id -u) -t tmpfs tmpfs "${MNT}" \
+          && echo ":heavy_check_mark: Temp disk mount operation succeeded" >> $GITHUB_STEP_SUMMARY \
+          || { echo ":heavy_check_mark: Temp disk mount operation failed" >> $GITHUB_STEP_SUMMARY; exit 1; } 
+          echo "uuid=${UUID}" >> $GITHUB_OUTPUT
+          echo "mnt=${MNT}" >> $GITHUB_OUTPUT

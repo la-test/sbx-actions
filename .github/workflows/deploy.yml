@@ -39,10 +39,7 @@ jobs:
 
       - name: Create temp disk
         id: mk_tmp_disk
-        uses: ./.github/actions/temp-disk-luks
-        # with:
-        #   root: .
-        #   size: 4
+        uses: ./.github/actions/temp-disk-ram
 
       - name: Get secret via Magic Wormhole
         id: get_ssh_key
@@ -75,7 +72,6 @@ jobs:
       - name: Cleanup temp disk
         run: |
           sudo umount "${{ steps.mk_tmp_disk.outputs.mnt }}"
-          sudo cryptsetup close ${{ steps.mk_tmp_disk.outputs.uuid }}
 
       - name: Check ssh command
         run: |
