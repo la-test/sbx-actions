@@ -1,0 +1,29 @@
+version: '3'
+services:
+  nodejs:
+    #image: node:current-alpine
+    build: 
+      context: docker/nodejs
+      dockerfile: Dockerfile
+      args:
+        uid: "${_UID:-1000}"
+        gid: "${_GID:-1000}"
+    volumes:
+      - .:/var/tmp/nodejs
+    working_dir: /var/tmp/nodejs
+    stdin_open: true
+    tty: true
+    hostname: nodejs.local
+    container_name: nodejs.local
+    command: sh
+    networks:
+      - bridge
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 256M
+
+networks:
+  bridge:
+    external: true
