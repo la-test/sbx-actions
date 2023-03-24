@@ -1,19 +1,58 @@
 name: Docker
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/docker.yml'
+      - 'docker/**'
+  pull_request:
+    paths:
+      - '.github/workflows/docker.yml'
+      - 'docker/**'
+  workflow_dispatch:
 
 jobs:
-  docker_test:
-    name: Run some doker tests
+  docker:
+    name: Build
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+
     steps:
+      - name: Show environment
+        id: show_env
+        run: |
+          echo "User IDs"
+          id
+          echo "Environmnent"
+          env | sort
+
       - name: Checkout
+        id: checkout
         uses: actions/checkout@v3    
 
-      - name: Install docker and composer
+      - name: Install Docker
+        id: install_docker
         run: |
-          sudo apt install docker-compose
-
-      - name: Check docker setup
-        run: |
+          sudo apt install --quiet docker-compose
           docker run hello-world
+
+      - name: Verify Docker
+        id: verify_docker
+        run: |
+          docker version
+          docker-compose version
+          docker run hello-world
+
+      - name: Build Terraform image
+        id: build_images
+        run: |
+          docker-compose build --quiet --build-arg uid=$(id -u) --build-arg gid=$(id -g) terraform-shell
+
+      - name: Verify Terraform image
+        id: verify_terraform
+        run: |
+          docker-compose --compatibility run --entrypoint /bin/terraform terraform-shell -version
