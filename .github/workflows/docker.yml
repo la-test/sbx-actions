@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  docker:
+  build:
     name: Build
     runs-on: ubuntu-latest
     permissions:
@@ -22,14 +22,6 @@ jobs:
       contents: read
 
     steps:
-      - name: Show environment
-        id: show_env
-        run: |
-          echo "User IDs"
-          id
-          echo "Environmnent"
-          env | sort
-
       - name: Checkout
         id: checkout
         uses: actions/checkout@v3    
@@ -50,14 +42,27 @@ jobs:
       - name: Fix goup membership
         id: fix_group
         run: |
-          # Use the `runner` group rather than the `docker` one
+          # Add the existing `runner` group to avoid the `docker` one
           sudo adduser runner runner
           echo "_GID=$(grep -E "^runner:" /etc/group | cut -d: -f3)" >> $GITHUB_ENV
 
       - name: Build images
         id: build_images
         run: |
-          docker-compose build --quiet --build-arg uid=$(id -u) --build-arg gid=${_GID} terraform-shell
+          docker-compose build --quiet --build-arg uid=$(id -u) --build-arg gid=${_GID}
+
+  verify:
+    name: Verify
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    needs: build
+
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v3    
 
       - name: Verify Terraform image
         id: verify_terraform
