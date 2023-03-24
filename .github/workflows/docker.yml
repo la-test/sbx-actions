@@ -31,7 +31,8 @@ jobs:
       - name: Install Docker
         id: install_docker
         run: |
-          docker --version > /dev/null \
+          # Only if needed
+          docker --version \
           || sudo apt-get install --assume-yes --quiet docker-compose
 
       - name: Verify Docker
