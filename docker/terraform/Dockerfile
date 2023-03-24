@@ -3,8 +3,8 @@
 ##############################
 
 # Pull base image from official repo
-ARG TF_VERSION=latest
-FROM hashicorp/terraform:${TF_VERSION}
+ARG terraform_version=latest
+FROM hashicorp/terraform:${terraform_version}
 
 # Prepare locales
 ARG locale=en_US.UTF-8
