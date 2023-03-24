@@ -33,7 +33,7 @@ jobs:
         run: |
           # Only if needed
           docker --version \
-          || sudo apt-get install --assume-yes --quiet docker-compose
+          && sudo apt-get install --assume-yes --quiet docker-compose
 
       - name: Verify Docker
         id: verify_docker
