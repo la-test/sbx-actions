@@ -28,19 +28,12 @@ jobs:
         id: checkout
         uses: actions/checkout@v3    
 
-      - name: Install Docker
-        id: install_docker
-        run: |
-          # Only if needed
-          docker --version \
-          && sudo apt-get install --assume-yes --quiet docker-compose
-
       - name: Verify Docker
         id: verify_docker
         run: |
           docker run hello-world > /dev/null
           docker version
-          docker-compose version
+          docker compose version
 
       - name: Fix goup membership
         id: fix_group
@@ -52,7 +45,7 @@ jobs:
       - name: Build images
         id: build_images
         run: |
-          docker-compose build --quiet \
+          docker compose build --quiet \
           --build-arg uid=$(id -u) \
           --build-arg gid=${_GID} \
           --build-arg terraform_version=${TF_VERSION}
@@ -60,6 +53,6 @@ jobs:
       - name: Verify Terraform version
         id: verify_terraform
         run: |
-          docker-compose --compatibility run --entrypoint /bin/terraform terraform-shell -version \
+          docker compose run --entrypoint /bin/terraform terraform-shell -version \
           | tee --append /dev/stderr \
           | grep -q "Terraform v${TF_VERSION}"
