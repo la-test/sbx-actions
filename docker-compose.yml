@@ -16,8 +16,7 @@ services:
     hostname: nodejs.local
     container_name: nodejs.local
     command: sh
-    networks:
-      - bridge
+    network_mode: "bridge"
     # Prevents container to hang the host
     # Requires `... --compatibility run ...`
     deploy:

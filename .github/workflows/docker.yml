@@ -50,7 +50,10 @@ jobs:
       - name: Build Terraform image
         id: build_images
         run: |
-          docker-compose build --quiet --build-arg uid=$(id -u) --build-arg gid=$(id -g) terraform-shell
+          # To avoid gid=123 which is a system group
+          GID=$(grep -E "^runner:" /etc/group | cut -d: -f3)
+          sudo adduser runner runner
+          docker-compose build --quiet --build-arg uid=$(id -u) --build-arg gid=${GID} terraform-shell
 
       - name: Verify Terraform image
         id: verify_terraform
