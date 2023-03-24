@@ -47,13 +47,17 @@ jobs:
           docker-compose version
           docker run hello-world
 
-      - name: Build Terraform image
+      - name: Fix goup membership
+        id: fix_group
+        run: |
+          # Use the `runner` group rather than the `docker` one
+          sudo adduser runner runner
+          echo "_GID=$(grep -E "^runner:" /etc/group | cut -d: -f3)" >> $GITHUB_ENV
+
+      - name: Build images
         id: build_images
         run: |
-          # To avoid gid=123 which is a system group
-          GID=$(grep -E "^runner:" /etc/group | cut -d: -f3)
-          sudo adduser runner runner
-          docker-compose build --quiet --build-arg uid=$(id -u) --build-arg gid=${GID} terraform-shell
+          docker-compose build --quiet --build-arg uid=$(id -u) --build-arg gid=${_GID} terraform-shell
 
       - name: Verify Terraform image
         id: verify_terraform
