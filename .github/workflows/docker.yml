@@ -13,6 +13,8 @@ on:
       - 'docker/**'
   workflow_dispatch:
 
+env:
+  TF_VERSION: "1.4.2"
 jobs:
   build:
     name: Build
@@ -29,15 +31,15 @@ jobs:
       - name: Install Docker
         id: install_docker
         run: |
-          sudo apt install --quiet docker-compose
-          docker run hello-world
+          docker --version > /dev/null \
+          || sudo apt-get install --assume-yes --quiet docker-compose
 
       - name: Verify Docker
         id: verify_docker
         run: |
+          docker run hello-world > /dev/null
           docker version
           docker-compose version
-          docker run hello-world
 
       - name: Fix goup membership
         id: fix_group
@@ -49,22 +51,14 @@ jobs:
       - name: Build images
         id: build_images
         run: |
-          docker-compose build --quiet --build-arg uid=$(id -u) --build-arg gid=${_GID}
+          docker-compose build --quiet \
+          --build-arg uid=$(id -u) \
+          --build-arg gid=${_GID} \
+          --build-arg terraform_version=${TF_VERSION}
 
-  verify:
-    name: Verify
-    runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
-      contents: read
-    needs: build
-
-    steps:
-      - name: Checkout
-        id: checkout
-        uses: actions/checkout@v3    
-
-      - name: Verify Terraform image
+      - name: Verify Terraform version
         id: verify_terraform
         run: |
-          docker-compose --compatibility run --entrypoint /bin/terraform terraform-shell -version
+          docker-compose --compatibility run --entrypoint /bin/terraform terraform-shell -version \
+          | tee --append /dev/stderr \
+          | grep -q "Terraform v${TF_VERSION}"
