@@ -16,8 +16,8 @@ on:
 env:
   TF_VERSION: "1.4.2"
 jobs:
-  build:
-    name: Build
+  main:
+    name: Main
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
