@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
 
 env:
-  TF_VERSION: "1.2.3"
+  TF_VERSION: "1.4.2"
 jobs:
   main:
     name: Main
