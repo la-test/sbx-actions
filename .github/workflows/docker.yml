@@ -1,7 +1,20 @@
 name: Docker
 
-on: [push, pull_request]
-
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/docker.yml'
+      - 'docker/**'
+      - 'src/**'
+  pull_request:
+    branches:    
+      - main
+    paths:
+      - '.github/workflows/docker.yml'
+      - 'docker/**'
+      - 'src/**'
 jobs:
   docker_test:
     name: Run some doker tests
