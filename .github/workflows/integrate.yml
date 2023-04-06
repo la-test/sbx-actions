@@ -36,3 +36,6 @@ jobs:
         with:
           size: 2
           root: '/mnt'
+      - name: Cleanup
+        run: |
+          sudo umount "${{ steps.tmpfs.outputs.mnt }}"
