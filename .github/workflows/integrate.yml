@@ -35,14 +35,15 @@ jobs:
       - name: Prepare test key and server
         id: prepare
         run: |
-          # Import private key
-          cat <<EOF > "${{ steps.tmpfs.outputs.mnt }}/test_key"
-          ${{ secrets.SFTP_IDENTITY }}
-          EOF
+          # Generate key pair
+          ssh-keygen -t ed25519 -f ./test_key -P ''
+          echo "private_key<<EOF" >> $GITHUB_OUTPUT
+          cat ./test_key >> $GITHUB_OUTPUT
+          echo EOF >> $GITHUB_OUTPUT
+
           # Authorizing pub key
-          chmod 0600 "${{ steps.tmpfs.outputs.mnt }}/test_key"
           mkdir ~/.ssh && chmod 0700 ~/.ssh
-          ssh-keygen -f "${{ steps.tmpfs.outputs.mnt }}/test_key" -y >> ~/.ssh/authorized_keys
+          cat ./test_key.pub >> ~/.ssh/authorized_keys
           chmod 0600 ~/.ssh/authorized_keys
           sudo systemctl status sshd || sudo systemctl start sshd
 
@@ -54,7 +55,7 @@ jobs:
         id: agent
         uses: LeastAuthority/ssh-agent-action@v1
         with:
-          private_key: ${{ secrets.CID_PRIVATE_KEY }}
+          private_key: ${{ steps.prepare.outputs.private_key }}
 
       - name: Test ssh connectivity
         id: connect
