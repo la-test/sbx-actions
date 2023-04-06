@@ -30,3 +30,9 @@ jobs:
           echo "GIT_REF=$GIT_REF"
         env:
           GIT_REF: ${{ github.ref }}
+      - name: Get a tmpfs for our secret
+        id: tmpfs
+        uses: LeastAuthority/mount-tmpfs-action@3.import-action
+        with:
+          size: 2
+          root: '/mnt'
