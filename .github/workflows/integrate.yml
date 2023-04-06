@@ -20,7 +20,7 @@ jobs:
           paths: '["src/**", "scripts/**", "ssh/**", ".github/workflows/integrate.yml"]'
 
   integrate:
-    name: Intergate
+    name: Integrate
     needs: pre
     if: needs.pre.outputs.should_skip != 'true'
     runs-on: ubuntu-latest
@@ -32,7 +32,7 @@ jobs:
           GIT_REF: ${{ github.ref }}
       - name: Get a tmpfs for our secret
         id: tmpfs
-        uses: LeastAuthority/mount-tmpfs-action@3.import-action
+        uses: LeastAuthority/mount-tmpfs-action@v1
         with:
           size: 2
           root: '/mnt'
