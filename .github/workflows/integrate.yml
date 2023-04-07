@@ -27,7 +27,7 @@ jobs:
     steps:
       - name: Get a tmpfs for our secret
         id: tmpfs
-        uses: LeastAuthority/mount-tmpfs-action@v1.0.1
+        uses: LeastAuthority/mount-tmpfs-action@v1
         with:
           size: 2
           root: '/mnt'
@@ -79,7 +79,7 @@ jobs:
         uses: LeastAuthority/lftp-mirror-action@3.import-action
         with:
           src: ./test/local/
-          dst: "sftp://${{ env.TEST_USER }}@172.17.0.1/${{ env.TEST_WORKSPACE }}/test/remote/"
+          dst: "sftp://${{ env.TEST_USER }}@172.17.0.1${{ env.TEST_WORKSPACE }}/test/remote/"
           connect_program: 'ssh -a -x -o StrictHostKeyChecking=no'
           verbose: true
           timeout: 10
