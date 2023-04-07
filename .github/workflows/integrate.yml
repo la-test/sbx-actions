@@ -27,7 +27,7 @@ jobs:
     steps:
       - name: Get a tmpfs for our secret
         id: tmpfs
-        uses: LeastAuthority/mount-tmpfs-action@v1
+        uses: LeastAuthority/mount-tmpfs-action@v1.0.1
         with:
           size: 2
           root: '/mnt'
