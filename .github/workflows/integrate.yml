@@ -36,7 +36,6 @@ jobs:
         id: prepare
         run: |
           # Generate key pair
-          touch "${{ steps.tmpfs.outputs.mnt }}/me"
           ssh-keygen -t ed25519 -f "${{ steps.tmpfs.outputs.mnt }}/key" -P ''
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "private_key<<$EOF" >> $GITHUB_OUTPUT
