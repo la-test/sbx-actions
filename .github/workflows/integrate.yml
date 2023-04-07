@@ -37,15 +37,26 @@ jobs:
         run: |
           # Generate key pair
           ssh-keygen -t ed25519 -f ./test_key -P ''
-          echo "private_key<<EOF" >> $GITHUB_OUTPUT
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "private_key<<$EOF" >> $GITHUB_OUTPUT
           cat ./test_key >> $GITHUB_OUTPUT
-          echo EOF >> $GITHUB_OUTPUT
+          echo $EOF >> $GITHUB_OUTPUT
 
           # Authorizing pub key
           mkdir ~/.ssh && chmod 0700 ~/.ssh
           cat ./test_key.pub >> ~/.ssh/authorized_keys
           chmod 0600 ~/.ssh/authorized_keys
           sudo systemctl status sshd || sudo systemctl start sshd
+
+          # Store some environment
+          echo "USER=$(whoami)" >> $GITHUB_ENV
+
+          # Create test directories
+          mkdir -p ./test/{local,remote}
+          for content in bla bli blu; do
+            mkdir -p ./test/local/${content}
+            echo "Test content in ${content}" > ./test/local/${content}/${content}.ext
+          done
 
       - name: Cleanup tmpfs
         run: |
@@ -61,3 +72,17 @@ jobs:
         id: connect
         run: |
           ssh -a -x -o StrictHostKeyChecking=no $(whoami)@localhost ps -edaf
+
+      - name: Mirror content
+        id: mirror
+        uses: LeastAuthority/lftp-mirror-action@3.import-action
+        with:
+          remote: "sftp://${{ env.USER }}:dummy@172.17.0.1/${{ env.GITHUB_WORSPACE }}/test/remote/"
+          local_dir: ./test/local/
+          connect_program: 'ssh -a -x -o StrictHostKeyChecking=no -i ./test_key'
+          reverse: true
+          verbose: true
+          timeout: 10
+        env:
+          VERBOSE: 2
+        continue-on-error: true
