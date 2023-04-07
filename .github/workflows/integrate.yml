@@ -78,8 +78,8 @@ jobs:
         uses: LeastAuthority/lftp-mirror-action@3.import-action
         with:
           src: ./test/local/
-          dst: "sftp://${{ env.USER }}:dummy@172.17.0.1/${{ env.GITHUB_WORSPACE }}/test/remote/"
-          connect_program: 'ssh -a -x -o StrictHostKeyChecking=no -i ./test_key'
+          dst: "sftp://${{ env.USER }}@172.17.0.1/${{ env.GITHUB_WORSPACE }}/test/remote/"
+          connect_program: 'ssh -a -x -o StrictHostKeyChecking=no'
           verbose: true
           timeout: 10
         env:
