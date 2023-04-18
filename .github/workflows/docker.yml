@@ -35,10 +35,3 @@ jobs:
       - name: Check docker setup
         run: |
           docker run hello-world
-
-      - name: Save images
-        id: cache-images-save
-        uses: actions/cache/save@v3
-        with:
-          path: /var/lib/docker
-          key: ${{ steps.cache-images-restore.outputs.cache-primary-key }}
