@@ -20,13 +20,77 @@ jobs:
           paths: '["src/**", "scripts/**", "ssh/**", ".github/workflows/integrate.yml"]'
 
   integrate:
-    name: Intergate
+    name: Integrate
     needs: pre
     if: needs.pre.outputs.should_skip != 'true'
     runs-on: ubuntu-latest
     steps:
-      - name: Test
+      - name: Get a tmpfs for our secret
+        id: tmpfs
+        uses: LeastAuthority/mount-tmpfs-action@v1
+        with:
+          size: 2
+          root: '/mnt'
+
+      - name: Prepare test key and server
+        id: prepare
         run: |
-          echo "GIT_REF=$GIT_REF"
+          # Generate key pair
+          ssh-keygen -t ed25519 -f "${{ steps.tmpfs.outputs.mnt }}/key" -P ''
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "private_key<<$EOF" >> $GITHUB_OUTPUT
+          cat "${{ steps.tmpfs.outputs.mnt }}/key" >> $GITHUB_OUTPUT
+          echo $EOF >> $GITHUB_OUTPUT
+
+          # Authorizing pub key
+          mkdir ~/.ssh && chmod 0700 ~/.ssh
+          cat "${{ steps.tmpfs.outputs.mnt }}/key.pub" >> ~/.ssh/authorized_keys
+          chmod 0600 ~/.ssh/authorized_keys
+          sudo systemctl status sshd || sudo systemctl start sshd
+
+          # Store some environment
+          echo "TEST_USER=$(whoami)" >> $GITHUB_ENV
+          echo "TEST_WORKSPACE=$(pwd)" >> $GITHUB_ENV
+
+          # Create test directories
+          mkdir -p ./test/{local,remote}
+          for content in bla bli blu; do
+            mkdir -p ./test/local/${content}
+            echo "Test content in ${content}" > ./test/local/${content}/${content}.ext
+          done
+
+      - name: Cleanup tmpfs
+        run: |
+          sudo umount "${{ steps.tmpfs.outputs.mnt }}"
+
+      - name: Get an agent ready
+        id: agent
+        uses: LeastAuthority/ssh-agent-action@v1
+        with:
+          private_key: ${{ steps.prepare.outputs.private_key }}
+          #auth_sock_path: ${{ github.workspace }}/S.agent.ssh
+
+      - name: Test ssh connectivity
+        id: connect
+        run: |
+          ssh -a -x -o StrictHostKeyChecking=no $(whoami)@localhost ps -edaf
+
+      - name: Test ssh connectivity via docker
+        id: docker_connect
+        run: |
+          docker run \
+          -e SSH_AUTH_SOCK=${SSH_AUTH_SOCK} \
+          -v ${SSH_AUTH_SOCK}:${SSH_AUTH_SOCK} \
+          codingkoopa/openssh ssh -a -x -o StrictHostKeyChecking=no $(whoami)@172.17.0.1 ps -edaf
+
+      - name: Mirror content
+        id: mirror
+        uses: LeastAuthority/lftp-mirror-action@v1
+        with:
+          src: ./test/local/
+          dst: "sftp://${{ env.TEST_USER }}@172.17.0.1${{ env.TEST_WORKSPACE }}/test/remote/"
+          connect_program: 'ssh -a -x -o StrictHostKeyChecking=no'
+          verbose: true
+          timeout: 10
         env:
-          GIT_REF: ${{ github.ref }}
+          VERBOSE: 2
