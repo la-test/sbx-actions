@@ -16,14 +16,48 @@ services:
     hostname: nodejs.local
     container_name: nodejs.local
     command: sh
-    networks:
-      - bridge
+    network_mode: "bridge"
+    # Prevents container to hang the host
+    # Requires `... --compatibility run ...`
     deploy:
       resources:
         limits:
           cpus: '1.5'
           memory: 256M
 
-networks:
-  bridge:
-    external: true
+  terraform-shell:
+    build: 
+      context: docker/terraform
+      dockerfile: Dockerfile
+      args:
+        uid: "${_UID:-1000}"
+        gid: "${_GID:-1000}"
+    volumes:
+      - .:/var/lib/appdata
+    working_dir: /var/lib/appdata
+    environment:
+      # Commonly required for the backend
+      - TF_TOKEN_app_terraform_io=${TF_TOKEN_app_terraform_io}
+      # Required for -chgdir=terraform/aws_eval
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-eu-central-1}
+      #- AWS_PROFILE: ${AWS_PROFILE}
+      # Required for -chgdir=terraform/ovh_eu
+      - OVH_ENDPOINT=${OVH_ENDPOINT}
+      - OVH_CONSUMER_KEY=${OVH_CONSUMER_KEY}
+      - OVH_APPLICATION_KEY=${OVH_APPLICATION_KEY}
+      - OVH_APPLICATION_SECRET=${OVH_APPLICATION_SECRET}
+    entrypoint: /bin/sh
+    stdin_open: true
+    tty: true
+    hostname: terraform-shell.local
+    container_name: terraform-shell.local
+    network_mode: "bridge"
+    # Prevents container to hang the host
+    # Requires `... --compatibility run ...`
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 256M

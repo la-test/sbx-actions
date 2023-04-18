@@ -15,18 +15,48 @@ on:
       - '.github/workflows/docker.yml'
       - 'docker/**'
       - 'src/**'
+  workflow_dispatch:
+
+env:
+  TF_VERSION: "1.4.2"
 jobs:
-  docker_test:
-    name: Run some doker tests
+  main:
+    name: Main
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+
     steps:
       - name: Checkout
+        id: checkout
         uses: actions/checkout@v3    
 
-      - name: Install docker and composer
+      - name: Verify Docker
+        id: verify_docker
         run: |
-          sudo apt install docker-compose
+          docker run hello-world > /dev/null
+          docker version
+          docker compose version
 
-      - name: Check docker setup
+      - name: Fix goup membership
+        id: fix_group
         run: |
-          docker run hello-world
+          # Add the existing `runner` group to avoid the `docker` one
+          sudo adduser runner runner
+          echo "_GID=$(grep -E "^runner:" /etc/group | cut -d: -f3)" >> $GITHUB_ENV
+
+      - name: Build images
+        id: build_images
+        run: |
+          docker compose build --quiet \
+          --build-arg uid=$(id -u) \
+          --build-arg gid=${_GID} \
+          --build-arg terraform_version=${TF_VERSION}
+
+      - name: Verify Terraform version
+        id: verify_terraform
+        run: |
+          docker compose run --entrypoint /bin/terraform terraform-shell -version \
+          | tee --append /dev/stderr \
+          | grep -q "Terraform v${TF_VERSION}"
