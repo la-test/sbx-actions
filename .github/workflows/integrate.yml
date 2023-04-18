@@ -68,7 +68,7 @@ jobs:
         uses: LeastAuthority/ssh-agent-action@v1
         with:
           private_key: ${{ steps.prepare.outputs.private_key }}
-          auth_sock_path: ${{ env.GITHUB_WORKSPACE }}/S.agent.ssh
+          auth_sock_path: ${{ format('{0}/{1}', env.GITHUB_WORKSPACE, 'S.agent.ssh') }}
 
       - name: Test ssh connectivity
         id: connect
