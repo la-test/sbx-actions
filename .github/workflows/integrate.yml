@@ -65,10 +65,10 @@ jobs:
 
       - name: Get an agent ready
         id: agent
-        uses: LeastAuthority/ssh-agent-action@v1
+        uses: LeastAuthority/ssh-agent-action@b5ee74f25b0f000b7473f94a399d6254fef388d2
         with:
           private_key: ${{ steps.prepare.outputs.private_key }}
-          auth_sock_path: ${{ github.workspace }}/S.agent.ssh
+          #auth_sock_path: ${{ github.workspace }}/S.agent.ssh
 
       - name: Test ssh connectivity
         id: connect
