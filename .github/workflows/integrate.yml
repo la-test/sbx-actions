@@ -81,7 +81,7 @@ jobs:
           docker run \
           -e SSH_AUTH_SOCK=/ssh.socket \
           -v ${GITHUB_WORKSPACE}/${SSH_AUTH_SOCK}:/ssh.socket \
-          codingkoopa/openssh ssh-add -L
+          codingkoopa/openssh id
           #ssh -a -x -o StrictHostKeyChecking=no $(whoami)@172.17.0.1 ps -edaf
 
       - name: Mirror content
