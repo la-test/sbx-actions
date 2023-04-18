@@ -27,6 +27,28 @@ jobs:
         run: |
           sudo apt install docker-compose
 
+      - name: Stop docker before restoring
+        run: |
+          sudo systemctl stop docker
+
+      - name: Restore cached images
+        id: cache-images-restore
+        uses: actions/cache/restore@v3
+        with:
+          path: /var/lib/docker
+          key: ${{ runner.os }}-images
+
+      - name: Start docker after restoring
+        run: |
+          sudo systemctl start docker
+
       - name: Check docker setup
         run: |
           docker run hello-world
+
+      - name: Save images
+        id: cache-images-save
+        uses: actions/cache/save@v3
+        with:
+          path: /var/lib/docker
+          key: ${{ steps.cache-images-restore.outputs.cache-primary-key }}
