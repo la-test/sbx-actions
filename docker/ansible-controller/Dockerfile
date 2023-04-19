@@ -58,7 +58,7 @@ COPY requirements.txt /home/${user}/requirements.txt
 #RUN chown ${user}:${user} /home/${user}/requirements.txt
 
 # Install requirements
-RUN python -m pip install --user --upgrade -r requirements.txt
+RUN python -m pip install --no-cache --user --upgrade -r requirements.txt
 
 # Install additional Ansible requirements
 COPY requirements.yml /home/${user}/requirements.yml
