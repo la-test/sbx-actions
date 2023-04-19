@@ -33,7 +33,7 @@ jobs:
               '**/*Dockerfile*',
               '**/entrypoint.sh',
               '**/requirements.*',
-              '**/package-lock.json',
+              '**/package-lock.json'
             ) }}
 
       - name: Install docker support
