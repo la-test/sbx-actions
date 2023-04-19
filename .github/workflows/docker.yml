@@ -26,13 +26,13 @@ jobs:
       - name: Cache docker images
         uses: ScribeMD/docker-cache@0.3.3
         with:
-          key: docker-${{ runner.os }}-${{ hashFiles(
+          key: |
+            docker-${{ runner.os }}-${{ hashFiles(
             '**/docker-compose*.yml',
             '**/*Dockerfile*',
             '**/entrypoint.sh',
             '**/requirements.*',
-            '**/package-lock.json'
-          ) }}
+            '**/package-lock.json') }}
 
       - name: Install docker support
         id: install_docker
