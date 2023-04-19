@@ -29,11 +29,12 @@ jobs:
         with:
           key: |
             docker-${{ runner.os }}-${{ hashFiles(
-            '**/docker-compose*.yml',
-            '**/*Dockerfile*',
-            '**/entrypoint.sh',
-            '**/requirements.*',
-            '**/package-lock.json') }}
+              '**/docker-compose*.yml',
+              '**/*Dockerfile*',
+              '**/entrypoint.sh',
+              '**/requirements.*',
+              '**/package-lock.json')
+            }}
 
       - name: Install docker support
         id: install_docker

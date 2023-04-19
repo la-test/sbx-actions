@@ -22,7 +22,6 @@ on:
 jobs:
   integrate:
     name: Integrate
-    if: needs.pre.outputs.should_skip != 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Get a tmpfs for our secret
