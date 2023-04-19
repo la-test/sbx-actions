@@ -47,7 +47,7 @@ jobs:
       - name: Build Ansible Controller image
         id: build_controller
         run: |
-          docker images --quiet mw-projects_ansible-controller:latest | grep -v "^$" || \
+          docker images --quiet ${${{ github.repository }}##*/}_ansible-controller:latest | grep -v "^$" || \
           docker-compose build --progress=plain \
           --build-arg uid=$(id -u) --build-arg user=$(id -nu) \
           --build-arg gid=$(id -g) --build-arg group=$(id -ng) \
