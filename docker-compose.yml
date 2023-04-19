@@ -13,7 +13,7 @@ services:
     volumes:
       - .:/var/lib/appdata
       - ~/.ssh:/home/appuser/.ssh
-      - "${SSH_AUTH_SOCK}:/ssh.socket"
+      - "${SSH_AUTH_SOCK:-./ssh.socket}:/ssh.socket"
     environment:
       - SSH_AUTH_SOCK="/ssh.socket"
     working_dir: /var/lib/appdata/ansible
