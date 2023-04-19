@@ -54,3 +54,7 @@ jobs:
           --build-arg uid=$(id -u) --build-arg user=$(id -nu) \
           --build-arg gid=$(id -g) --build-arg group=$(id -ng) \
           ansible-controller
+
+      - name: List docker images
+        run: |
+          docker images -a

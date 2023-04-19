@@ -3,18 +3,14 @@
 ##############################
 
 # Pull official base image from DockerHub
-ARG PYTHON_VERSION=3.10.11
-FROM python:${PYTHON_VERSION}-slim-bullseye
+FROM python:3.9.16-slim-bullseye
 
+# Avoid interactive frontend
 ENV DEBIAN_FRONTEND="noninteractive"
 
 ##################################
 # Application level requirements #
 ##################################
-
-# Upgrade Pip from PyPi
-ARG PIP_VERSION='22.3.1'
-RUN python -m pip install "pip==${PIP_VERSION}"
 
 ###########################
 # User level requirements #
@@ -53,12 +49,14 @@ ENV HOME=/home/${user}
 ENV PATH="${HOME}/.local/bin:${PATH}"
 ENV PYTHONPATH="."
 
+# Upgrade Pip
+RUN python -m pip install --no-cache --upgrade "pip==23.1"
+
 # Copy requirements
 COPY requirements.txt /home/${user}/requirements.txt
-#RUN chown ${user}:${user} /home/${user}/requirements.txt
 
 # Install requirements
-RUN python -m pip install --no-cache --user --upgrade -r requirements.txt
+RUN python -m pip install --user --no-cache --upgrade -r requirements.txt
 
 # Install additional Ansible requirements
 COPY requirements.yml /home/${user}/requirements.yml
