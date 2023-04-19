@@ -1,5 +1,33 @@
 version: '3'
 services:
+  # Ansible controller to test and run playbooks
+  ansible-controller:
+    build:
+      context: docker/ansible-controller
+      dockerfile: Dockerfile
+      args:
+        user: appuser
+        group: appgroup
+        uid: "${_UID:-1000}"
+        gid: "${_GID:-1000}"
+    volumes:
+      - .:/var/lib/appdata
+      - ~/.ssh:/home/appuser/.ssh
+      - "${SSH_AUTH_SOCK}:/ssh.socket"
+    environment:
+      - SSH_AUTH_SOCK="/ssh.socket"
+    working_dir: /var/lib/appdata/ansible
+    stdin_open: true
+    tty: true
+    hostname: ansible-controller.local
+    container_name: ansible-controller.local
+    command: bash
+    network_mode: "bridge"
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 256M
   nodejs:
     #image: node:current-alpine
     build: 

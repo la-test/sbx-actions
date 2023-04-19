@@ -23,15 +23,31 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3    
 
-      - name: Install docker and composer
-        run: |
-          sudo apt install docker-compose
-
-      - name: Cache Docker images.
+      - name: Cache docker images
         uses: ScribeMD/docker-cache@0.3.3
         with:
-          key: docker-${{ runner.os }}-${{ hashFiles('docker-compose.yml') }}
+          key: docker-${{ runner.os }}-${{ hashFiles(
+            '**/docker-compose*.yml',
+            '**/*Dockerfile*',
+            '**/entrypoint.sh',
+            '**/requirements.*',
+            '**/package-lock.json'
+          ) }}
+
+      - name: Install docker support
+        id: install_docker
+        run: |
+          sudo apt install --quiet docker-compose
 
       - name: Check docker setup
         run: |
           docker run hello-world
+
+      - name: Build Ansible Controller image
+        id: build_controller
+        run: |
+          docker images --quiet mw-projects_ansible-controller:latest | grep -v "^$" || \
+          docker-compose build --progress=plain \
+          --build-arg uid=$(id -u) --build-arg user=$(id -nu) \
+          --build-arg gid=$(id -g) --build-arg group=$(id -ng) \
+          ansible-controller
