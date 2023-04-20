@@ -10,7 +10,8 @@ on:
       - 'ssh/**'
       - 'src/**'
   pull_request:
-    branches:    
+    types: [ opened, synchronize, reopened, closed ]
+   branches:    
       - main
     paths:
       - '.github/workflows/integrate.yml'
