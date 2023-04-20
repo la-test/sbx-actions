@@ -19,11 +19,17 @@ on:
       - 'src/**'
   workflow_dispatch:
 
+env:
+  PREFIX: ${{ github.repository }}
+  SUFFIX: _${{ github.event.pull_request.number }}
 jobs:
   integrate:
     name: Integrate
     runs-on: ubuntu-latest
     steps:
+      - name: Print suffix and prefix
+        run: echo "PREFIX+SUFFIX= ${PREFIX}${SUFFIX}"
+
       - name: Get a tmpfs for our secret
         id: tmpfs
         uses: LeastAuthority/mount-tmpfs-action@v1
