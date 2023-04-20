@@ -2,27 +2,26 @@ name: Integration
 
 on:
   push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/integrate.yml'
+      - 'scripts/**'
+      - 'ssh/**'
+      - 'src/**'
   pull_request:
+    branches:    
+      - main
+    paths:
+      - '.github/workflows/integrate.yml'
+      - 'scripts/**'
+      - 'ssh/**'
+      - 'src/**'
+  workflow_dispatch:
 
 jobs:
-  pre:
-    # Verification to be done before the real check
-    name: Pre-check
-    runs-on: ubuntu-latest
-    outputs:
-      should_skip: ${{ steps.skip_flag.outputs.should_skip }}
-    steps:
-      - name: Skip flag
-        id: skip_flag
-        uses: fkirc/skip-duplicate-actions@v5
-        with:
-          concurrent_skipping: 'same_content_newer'
-          paths: '["src/**", "scripts/**", "ssh/**", ".github/workflows/integrate.yml"]'
-
   integrate:
     name: Integrate
-    needs: pre
-    if: needs.pre.outputs.should_skip != 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Get a tmpfs for our secret
