@@ -33,3 +33,14 @@ updates:
     # Raise all docker pull requests with reviewers
     reviewers:
       - "btlogy"
+  - package-ecosystem: "docker"
+    directory: "/docker/mailbox"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+    schedule:
+      interval: "daily"
+      time: "12:00"
+    # Raise all docker pull requests with reviewers
+    reviewers:
+      - "la-test/sbx"
