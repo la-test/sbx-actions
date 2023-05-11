@@ -43,4 +43,4 @@ updates:
       time: "12:00"
     # Raise all docker pull requests with reviewers
     reviewers:
-      - "btlogy"
+      - "la-test/sbx"
