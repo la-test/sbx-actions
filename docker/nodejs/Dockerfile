@@ -3,7 +3,7 @@
 ##############################
 
 # Pull base image from official repo
-FROM node:19.4.0-alpine3.17
+FROM node:20.1.0-alpine3.17
 
 # Prepare locales
 ARG locale=en_US.UTF-8
