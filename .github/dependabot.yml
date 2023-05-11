@@ -19,3 +19,11 @@ updates:
     # Raise all docker pull requests with reviewers
     reviewers:
       - "btlogy"
+  - package-ecosystem: "docker"
+    directory: "/docker/ansible-controller"
+    schedule:
+      interval: "daily"
+      time: "08:40"
+    # Raise all docker pull requests with reviewers
+    reviewers:
+      - "btlogy"
