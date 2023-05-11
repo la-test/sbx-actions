@@ -10,3 +10,12 @@ updates:
     # Raise all npm pull requests with reviewers
     reviewers:
       - "btlogy"
+  # Keep Docker base images up to date
+  - package-ecosystem: "docker"
+    directory: "/docker"
+    schedule:
+      interval: "daily"
+      time: "08:30"
+    # Raise all docker pull requests with reviewers
+    reviewers:
+      - "btlogy"
