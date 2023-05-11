@@ -12,7 +12,7 @@ updates:
       - "btlogy"
   # Keep Docker base images up to date
   - package-ecosystem: "docker"
-    directory: "/docker"
+    directory: "/docker/nodejs"
     schedule:
       interval: "daily"
       time: "08:30"
