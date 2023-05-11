@@ -14,7 +14,8 @@ updates:
   - package-ecosystem: "docker"
     directory: "/docker/nodejs"
     ignore:
-      - update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
     schedule:
       interval: "daily"
       time: "08:30"
@@ -24,7 +25,8 @@ updates:
   - package-ecosystem: "docker"
     directory: "/docker/ansible-controller"
     ignore:
-      - update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
     schedule:
       interval: "daily"
       time: "08:40"
