@@ -35,14 +35,12 @@ updates:
       - "btlogy"
   - package-ecosystem: "docker"
     directory: "/.github/actions/magic-wormhole-secret"
-    ignore:
-      - dependency-name: "*"
     schedule:
       interval: "daily"
       time: "12:00"
     reviewers:
       - "btlogy"
- - package-ecosystem: "docker"
+  - package-ecosystem: "docker"
     directory: "/docker/ansible-controller"
     ignore:
       - dependency-name: "*"
@@ -54,8 +52,6 @@ updates:
       - "btlogy"
   - package-ecosystem: "composer"
     directory: "/ansible/docker"
-    ignore:
-      - dependency-name: "*"
     schedule:
       interval: "daily"
       time: "12:00"
