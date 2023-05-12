@@ -34,13 +34,16 @@ updates:
     reviewers:
       - "btlogy"
   - package-ecosystem: "docker"
-    directory: "/docker/mailbox"
-    ignore:
-      - dependency-name: "*"
-        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+    directory: "/.github/actions/magic-wormhole-secret"
     schedule:
       interval: "daily"
       time: "12:00"
-    # Raise all docker pull requests with reviewers
     reviewers:
-      - "la-test/sbx"
+      - "btlogy"
+  - package-ecosystem: "composer"
+    directory: "/ansible/docker"
+    schedule:
+      interval: "daily"
+      time: "12:00"
+    reviewers:
+      - "btlogy"
