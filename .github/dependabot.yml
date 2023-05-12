@@ -6,7 +6,7 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-      time: "13:00"
+      time: "15:30"
     # Raise all npm pull requests with reviewers
     reviewers:
       - "btlogy"
@@ -18,7 +18,7 @@ updates:
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
     schedule:
       interval: "daily"
-      time: "08:30"
+      time: "15:30"
     # Raise all docker pull requests with reviewers
     reviewers:
       - "btlogy"
@@ -29,7 +29,7 @@ updates:
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
     schedule:
       interval: "daily"
-      time: "08:40"
+      time: "15:30"
     # Raise all docker pull requests with reviewers
     reviewers:
       - "btlogy"
@@ -37,34 +37,34 @@ updates:
     directory: "/.github/actions/magic-wormhole-secret"
     schedule:
       interval: "daily"
-      time: "12:00"
+      time: "15:30"
     reviewers:
       - "btlogy"
   - package-ecosystem: "docker"
     directory: "/ansible/docker/feedback"
     schedule:
       interval: "daily"
-      time: "12:00"
+      time: "15:30"
     reviewers:
       - "btlogy"
   - package-ecosystem: "docker"
     directory: "/ansible/docker/mailbox"
     schedule:
       interval: "daily"
-      time: "12:00"
+      time: "15:30"
     reviewers:
       - "btlogy"
   - package-ecosystem: "docker"
     directory: "/ansible/docker/relay"
     schedule:
       interval: "daily"
-      time: "12:00"
+      time: "15:30"
     reviewers:
       - "btlogy"
   - package-ecosystem: "docker"
     directory: "/ansible/docker/traefik"
     schedule:
       interval: "daily"
-      time: "12:00"
+      time: "15:30"
     reviewers:
       - "btlogy"
