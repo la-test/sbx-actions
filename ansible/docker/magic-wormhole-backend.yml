@@ -2,8 +2,7 @@ version: "3.3"
 services:
   traefik:
     build:
-      context: ./docker
-      dockerfile: traefik.Dockerfile
+      context: ./docker/traefik
     command:
       - "--accesslog"
       - "--metrics.datadog=true"
@@ -30,8 +29,7 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
   mailbox:
     build:
-      context: ./docker
-      dockerfile: mailbox.Dockerfile
+      context: ./docker/mailbox
     logging:
       driver: "json-file"
       options:
@@ -54,8 +52,7 @@ services:
       - "./mailbox_database:/db"
   relay:
     build:
-      context: ./docker
-      dockerfile: relay.Dockerfile
+      context: ./docker/relay
     logging:
       driver: "json-file"
       options:
@@ -82,8 +79,7 @@ services:
       - "./relay_database:/db"
   feedback:
     build:
-      context: ./docker
-      dockerfile: feedback.Dockerfile
+      context: ./docker/feedback
     logging:
       driver: "json-file"
       options:
