@@ -40,16 +40,6 @@ updates:
       time: "12:00"
     reviewers:
       - "btlogy"
-  - package-ecosystem: "docker"
-    directory: "/docker/ansible-controller"
-    ignore:
-      - dependency-name: "*"
-        update-types: ["version-update:semver-major", "version-update:semver-minor"]
-    schedule:
-      interval: "daily"
-      time: "12:00"
-    reviewers:
-      - "btlogy"
   - package-ecosystem: "composer"
     directory: "/ansible/docker"
     schedule:
