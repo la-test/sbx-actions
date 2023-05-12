@@ -40,7 +40,7 @@ updates:
       time: "12:00"
     reviewers:
       - "btlogy"
-  - package-ecosystem: "composer"
+  - package-ecosystem: "docker"
     directory: "/ansible/docker"
     schedule:
       interval: "daily"
