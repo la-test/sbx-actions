@@ -44,6 +44,14 @@ jobs:
       - name: Check docker setup
         run: |
           docker run hello-world
+          echo "Current user:" && id -a
+          echo "Sub user IDs:" && sudo cat /etc/subuid
+          echo "Sub group IDs:" && sudo cat /etc/subgid
+          sudo test -f /etc/docker/daemon.json && { \
+          echo "Docker daemon JSON config:"
+          sudo cat /etc/docker/daemon.json; } || \
+          echo "Docker daemon JSON config not found"
+          echo "Docker group:" && sudo grep docker /etc/group
 
       - name: Build Ansible Controller image
         id: build_controller
