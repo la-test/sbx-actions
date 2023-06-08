@@ -13,6 +13,6 @@
   "author": "webmaster@tergology.com",
   "license": "GPL-3.0-or-later",
   "dependencies": {
-    "webpack": "^5.83.1"
+    "webpack": "^5.86.0"
   }
 }
