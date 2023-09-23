@@ -66,3 +66,11 @@ jobs:
       - name: List docker images
         run: |
           docker images -a
+
+      - name: Scan docker images
+        id: scan_images
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'image'
+          image-ref: 'sbx-actions_ansible-controller:latest '
+          trivy-config: './docker/trivy.yaml'
