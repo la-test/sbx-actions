@@ -3,3 +3,6 @@ collections:
   version: 3.5.0
 - name: ansible.posix
   version: 1.5.4
+roles:
+- name: johanmeiring.sftp-server
+  version: v3.1.4
