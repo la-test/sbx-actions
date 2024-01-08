@@ -50,7 +50,7 @@ ENV PATH="${HOME}/.local/bin:${PATH}"
 ENV PYTHONPATH="."
 
 # Upgrade Pip
-RUN python -m pip install --disable-pip-version-check --no-cache --upgrade "pip==23.1"
+RUN python -m pip install --disable-pip-version-check --no-cache --upgrade "pip==23.3.2"
 
 # Copy requirements
 COPY requirements.txt /home/${user}/requirements.txt
