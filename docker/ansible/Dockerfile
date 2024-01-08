@@ -50,7 +50,7 @@ ENV PATH="${HOME}/.local/bin:${PATH}"
 ENV PYTHONPATH="."
 
 # Upgrade Pip
-RUN python -m pip install --disable-pip-version-check --no-cache --upgrade "pip==23.1"
+RUN python -m pip install --disable-pip-version-check --no-cache --upgrade "pip==23.3.2"
 
 # Copy requirements
 COPY requirements.txt /home/${user}/requirements.txt
@@ -61,3 +61,22 @@ RUN python -m pip install --user --no-cache --upgrade -r requirements.txt
 # Install additional Ansible requirements
 COPY requirements.yml /home/${user}/requirements.yml
 RUN ansible-galaxy collection install -r requirements.yml
+
+# Some extra steps to allow local testing
+USER root
+
+# Install some required packages for testing
+RUN INSTALL_PKGS="sudo python3-apt python3-pip openssh-server" && \
+    apt-get -q clean && \
+    apt-get -q update && \
+    apt-get install -y $INSTALL_PKGS && \
+    apt-get -q clean
+
+# Allow user to become while testing playbook locally
+RUN echo -n "Defaults:${user} " > /etc/sudoers.d/ansible && \
+    echo '!requiretty' >> /etc/sudoers.d/ansible && \
+    echo "${user} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/ansible
+
+# Switch back to non-root user
+USER ${user}
+WORKDIR /home/${user}
