@@ -3,7 +3,7 @@ services:
   # Ansible controller to test and run playbooks
   ansible-controller:
     build:
-      context: docker/ansible-controller
+      context: docker/ansible
       dockerfile: Dockerfile
       args:
         user: appuser
