@@ -21,7 +21,7 @@ updates:
     reviewers:
       - "btlogy"
   - package-ecosystem: "docker"
-    directory: "/docker/ansible-controller"
+    directory: "/docker/ansible"
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
@@ -31,7 +31,7 @@ updates:
     reviewers:
       - "btlogy"
   - package-ecosystem: "pip"
-    directory: "/docker/ansible-controller"
+    directory: "/docker/ansible"
     schedule:
       interval: "daily"
       time: "12:30"
