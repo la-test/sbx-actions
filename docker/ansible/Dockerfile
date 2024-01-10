@@ -60,7 +60,7 @@ RUN python -m pip install --user --no-cache --upgrade -r requirements.txt
 
 # Install additional Ansible requirements
 COPY requirements.yml /home/${user}/requirements.yml
-RUN ansible-galaxy collection install -r requirements.yml
+RUN ansible-galaxy install -r requirements.yml
 
 # Some extra steps to allow local testing
 USER root
