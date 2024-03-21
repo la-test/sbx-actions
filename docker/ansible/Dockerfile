@@ -3,7 +3,7 @@
 ##############################
 
 # Pull official base image from DockerHub
-FROM python:3.9.18-slim-bullseye@sha256:85f0831e26d72c7c6e1eff1c6b395679c8a1d82965081e2b6b29fc3da17f7ffe
+FROM python:3.9.19-slim-bullseye@sha256:0ebdf1db1fa3673e49d17069ee69157232cbc459b99bb0d68f5c4b0a7487dd0c
 
 # Avoid interactive frontend
 ENV DEBIAN_FRONTEND="noninteractive"
