@@ -83,10 +83,8 @@ jobs:
           #vagrant init debian/bookworm64
           vagrant up --provider=libvirt
 
-      - name: Check the logs
-        run:
-          sudo journalctl -xae
-        if: always()
-
       - name: ssh into box after boot
         run: vagrant ssh -c "echo 'hello world!'"
+
+      - name: ssh into box after boot
+        run: vagrant ssh -c "cd /root/sbx-actions && ./ansible/files/update-deployment base-local"

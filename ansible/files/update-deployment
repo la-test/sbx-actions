@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+
+# Configure bash behavior
+set -o xtrace   # print every call to help debugging
+set -o errexit  # exit on failed command
+set -o nounset  # exit on undeclared variables
+set -o pipefail # exit on any failed command in pipes
+
+# Read the arguments
+target=${1?"Unknown target"}
+reference=${2-main}
+
+# Set some constants for our deployment
+url_user='git'
+url_host='github.com'
+url_owner='la-test'
+url_repo='sbx-actions'
+url="${url_user}@${url_host}:${url_owner}/${url_repo}"
+url_host_key='ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl'
+ansible_opts=( '-i' 'inventory' '--limit' "${target}" "--connection" "local" )
+
+# Overwrite (for now) the known_hosts with the git server key
+test -d ~/.ssh || mkdir ~/.ssh
+echo "${url_host} ${url_host_key}" > ~/.ssh/known_hosts
+
+# Load the existing private key used by sshd
+# TODO: considering generating a new key for that purpose only or one for all provisioned once?
+export GIT_SSH_COMMAND="ssh -i /etc/ssh/ssh_host_ed25519_key"
+# Print the public key, in case it has not been yet authorized
+echo "Public key used to access ${url_host}:"
+cat /etc/ssh/ssh_host_ed25519_key.pub
+
+# Verify the authentication a few times to give a chance to authorize read access for a new key
+(r=3;while ! (${GIT_SSH_COMMAND} -T "${url_user}@${url_host}" || [ $? -eq 1 ]); do ((--r))||exit;sleep 10;done)
+
+# Use the key to checkout the code and show some info
+cd /root
+# if [ ! -d "${url_repo}" ]; then
+#   git clone "${url}" "${url_repo}"
+# fi
+cd "${url_repo}"
+# git fetch origin
+# git checkout "${rev}"
+
+# Ensure ansible is installed as expected
+python3 -m venv --system-site-packages --symlinks .venv
+source .venv/bin/activate
+pip install --no-cache --upgrade -r docker/ansible/requirements.txt
+
+# Then check and apply the related ansible playbook
+cd ansible
+export LANG=C.UTF-8
+export ANSIBLE_FORCE_COLOR=True
+ansible-playbook "${ansible_opts[@]}" --check site.yml | cat -
+ansible-playbook "${ansible_opts[@]}" site.yml | cat -
