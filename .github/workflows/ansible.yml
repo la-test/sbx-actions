@@ -36,7 +36,7 @@ on:
 jobs:
   ansible:
     name: Ansible
-    runs-on: macos-14-large
+    runs-on: macos-14
     steps:
       - name: Checkout
         id: checkout
