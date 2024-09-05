@@ -3,14 +3,22 @@
 ##############################
 
 # Pull official base image from DockerHub
-FROM python:3.9.18-slim-bullseye@sha256:85f0831e26d72c7c6e1eff1c6b395679c8a1d82965081e2b6b29fc3da17f7ffe
+FROM debian:bookworm-20240812@sha256:aadf411dc9ed5199bc7dab48b3e6ce18f8bbee4f170127f5ff1b75cd8035eb36
 
-# Avoid interactive frontend
-ENV DEBIAN_FRONTEND="noninteractive"
+# Pass some wellknown variables
+ENV LANG=C.UTF-8
+ENV DEBIAN_FRONTEND=noninteractive
 
 ##################################
 # Application level requirements #
 ##################################
+
+# Install required packages to install Ansible
+RUN INSTALL_PKGS="python3-pip python3-venv" && \
+    apt-get -q clean && \
+    apt-get -q update && \
+    apt-get install -y $INSTALL_PKGS && \
+    apt-get -q clean
 
 ###########################
 # User level requirements #
@@ -49,14 +57,18 @@ ENV HOME=/home/${user}
 ENV PATH="${HOME}/.local/bin:${PATH}"
 ENV PYTHONPATH="."
 
-# Upgrade Pip
-RUN python -m pip install --disable-pip-version-check --no-cache --upgrade "pip==23.3.2"
+# Prepare the virtual Python env
+RUN python3 -m venv --system-site-packages --symlinks .venv
+ENV PATH="${HOME}/.venv/bin:${PATH}"
 
 # Copy requirements
 COPY requirements.txt /home/${user}/requirements.txt
 
 # Install requirements
-RUN python -m pip install --user --no-cache --upgrade -r requirements.txt
+# TIP to upgrade/downgrade those:
+# - use `python3 -m pip install --no-cache --upgrade ansible[==x.y.z]`,
+# - then `python3 -m pip freeze > requirements.txt` to upgrade Ansible and its dependencies.
+RUN pip install --no-cache --upgrade -r requirements.txt
 
 # Install additional Ansible requirements
 COPY requirements.yml /home/${user}/requirements.yml
@@ -66,7 +78,7 @@ RUN ansible-galaxy install -r requirements.yml
 USER root
 
 # Install some required packages for testing
-RUN INSTALL_PKGS="sudo python3-apt python3-pip openssh-server" && \
+RUN INSTALL_PKGS="sudo python3-apt openssh-server" && \
     apt-get -q clean && \
     apt-get -q update && \
     apt-get install -y $INSTALL_PKGS && \
