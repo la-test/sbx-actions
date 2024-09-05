@@ -45,7 +45,7 @@ jobs:
       - name: Setup Vagrant
         id: setup_vagrant
         run: |
-          ARG PACKAGES="\
+          PACKAGES="\
           git \
           libvirt-daemon-driver-qemu \
           openssh-client \
