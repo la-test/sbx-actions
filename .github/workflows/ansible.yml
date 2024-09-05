@@ -36,13 +36,32 @@ on:
 jobs:
   ansible:
     name: Ansible
-    runs-on: macos-14
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         id: checkout
         uses: actions/checkout@v4
 
+      - name: Setup Vagrant
+        id: setup_vagrant
+        run: |
+          ARG PACKAGES="\
+          git \
+          libvirt-daemon-driver-qemu \
+          openssh-client \
+          qemu \
+          qemu-utils \
+          qemu-system \
+          tini \
+          vagrant \
+          "
+
+          apt-get update && \
+          apt-get install --no-install-recommends -y ${PACKAGES} && \
+          rm -rf /var/lib/apt/lists/*
+
       - name: Cache Vagrant boxes
+        id: cache_vgrant
         uses: actions/cache@v2
         with:
           path: ~/.vagrant.d/boxes
