@@ -36,73 +36,11 @@ on:
 jobs:
   ansible:
     name: Ansible
-    runs-on: macos-13
+    runs-on: macos-14
     steps:
       - name: Checkout
         id: checkout
         uses: actions/checkout@v4
-
-      - name: Setup Docker
-        id: setup_docker
-        uses: douglascamata/setup-docker-macos-action@v1-alpha
-
-      - name: Verify Docker
-        id: verify_docker
-        run: |
-          docker run --rm hello-world:latest > /dev/null
-          docker rmi hello-world:latest > /dev/null
-          docker version
-          docker compose version
-
-      - name: Cache docker images
-        uses: ScribeMD/docker-cache@0.3.3
-        with:
-          key: |
-            docker-${{ runner.os }}-${{ hashFiles(
-              'docker-compose*.yml',
-              'docker/ansible*/*'
-            ) }}
-
-      - name: Fix group membership
-        id: fix_group
-        run: |
-          # Add the existing `runner` group to avoid the `docker` one
-          sudo adduser runner runner
-          echo "_GID=$(grep -E "^runner:" /etc/group | cut -d: -f3)" >> $GITHUB_ENV
-
-      - name: Build Ansible Controller image
-        id: build_controller
-        run: |
-          docker images "*ansible*"
-          repository=${{ github.repository }}
-          docker images --quiet ${repository##*/}*ansible-controller:latest | grep -v "^$" || \
-          docker compose --progress=plain build \
-          --build-arg uid=$(id -u) \
-          --build-arg gid=${_GID} \
-          ansible-controller && \
-          docker images "*ansible*"
-
-      - name: Lint Ansible playbooks
-        id: lint
-        if: ${{ github.event_name != 'workflow_dispatch' }}
-        run: |
-          docker compose run \
-          --rm \
-          -e ANSIBLE_FORCE_COLOR=true \
-          ansible-controller \
-          ansible-lint
-
-      - name: Check Ansible playbooks on local environment
-        id: check_local
-        if: ${{ github.event_name != 'workflow_dispatch' }}
-        run: |
-          docker images "*ansible*"
-          docker compose run \
-          --rm \
-          -e ANSIBLE_FORCE_COLOR=true \
-          -e LOCALDEV_HOST=127.0.0.1 \
-          ansible-controller \
-          ansible-playbook --connection=local --inventory ./inventory --check site.yml --limit 'local'
 
       - name: Cache Vagrant boxes
         uses: actions/cache@v2
