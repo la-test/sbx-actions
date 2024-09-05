@@ -45,28 +45,28 @@ updates:
     reviewers:
       - "btlogy"
   - package-ecosystem: "docker"
-    directory: "/ansible/docker/feedback"
+    directory: "/ansible/files/docker/stack/feedback"
     schedule:
       interval: "daily"
       time: "12:30"
     reviewers:
       - "btlogy"
   - package-ecosystem: "docker"
-    directory: "/ansible/docker/mailbox"
+    directory: "/ansible/files/docker/stack/mailbox"
     schedule:
       interval: "daily"
       time: "12:30"
     reviewers:
       - "btlogy"
   - package-ecosystem: "docker"
-    directory: "/ansible/docker/relay"
+    directory: "/ansible/files/docker/stack/relay"
     schedule:
       interval: "daily"
       time: "12:30"
     reviewers:
       - "btlogy"
   - package-ecosystem: "docker"
-    directory: "/ansible/docker/traefik"
+    directory: "/ansible/files/docker/stack/traefik"
     schedule:
       interval: "daily"
       time: "12:30"
