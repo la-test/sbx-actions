@@ -42,6 +42,10 @@ jobs:
         id: checkout
         uses: actions/checkout@v4
 
+      - name: Setup Docker
+        id: setup_docker
+        uses: douglascamata/setup-docker-macos-action@v1-alpha
+
       - name: Verify Docker
         id: verify_docker
         run: |
