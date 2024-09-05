@@ -45,7 +45,7 @@ jobs:
       - name: Setup Vagrant
         id: setup_vagrant
         run: |
-        PACKAGES="\
+          PACKAGES="\
           qemu \
           libvirt-daemon-system \
           ebtables \
