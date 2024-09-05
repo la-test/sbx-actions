@@ -56,9 +56,9 @@ jobs:
           vagrant \
           "
 
-          apt-get update && \
-          apt-get install --no-install-recommends -y ${PACKAGES} && \
-          rm -rf /var/lib/apt/lists/*
+          sudo apt-get update && \
+          sudo apt-get install --no-install-recommends -y ${PACKAGES} && \
+          sudo rm -rf /var/lib/apt/lists/*
 
       - name: Cache Vagrant boxes
         id: cache_vgrant
