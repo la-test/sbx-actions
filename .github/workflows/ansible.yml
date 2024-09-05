@@ -45,20 +45,20 @@ jobs:
       - name: Setup Vagrant
         id: setup_vagrant
         run: |
-          PACKAGES="\
-          git \
-          libvirt-daemon-driver-qemu \
-          openssh-client \
+        PACKAGES="\
           qemu \
-          qemu-utils \
-          qemu-system \
-          tini \
-          vagrant \
+          libvirt-daemon-system \
+          ebtables \
+          libguestfs-tools \
+          vagrant-libvirt \
+          ruby-fog-libvirt \
           "
 
           sudo apt-get update && \
           sudo apt-get install --no-install-recommends -y ${PACKAGES} && \
           sudo rm -rf /var/lib/apt/lists/*
+
+          sudo vagrant plugin install vagrant-libvirt
 
       - name: Cache Vagrant boxes
         id: cache_vgrant
