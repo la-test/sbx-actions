@@ -3,5 +3,6 @@ Vagrant.configure("2") do |config|
   #config.vm.provision "shell", inline: "sudo apt -y install nfs-common"
   config.vm.synced_folder "./", "/root/sbx-actions",
     type: "nfs",
-    nfs_udp: "false"
+    nfs_version: 4,
+    nfs_udp: false
 end
