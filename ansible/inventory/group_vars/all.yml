@@ -1,0 +1,17 @@
+---
+ansible_user: debian
+
+common_deploy_user: bot-cd
+common_deploy_key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOW5EXfVSXM1PywhBBUxZeXbx83QXNTYFZ1GX6e7wr7u it-ops+bot-cd@latfa.net"
+common_access_public_keys_dir: "{{ playbook_dir }}/files/public_keys"
+
+common_telegraf_influxdb_urls:
+  - http://monitoring.mw.leastauthority.com:8086
+common_telegraf_influxdb_organization: wormhole
+common_telegraf_influxdb_bucket: metrics
+common_telegraf_influxdb_token_var: MW_INFLUX_TOKEN
+common_telegraf_global_tags:
+  type: server
+  application: "{{ application | default('base') }}"
+  inventory_host: "{{ inventory_hostname }}"
+  environment: "{{ env }}"

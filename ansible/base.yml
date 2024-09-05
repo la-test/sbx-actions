@@ -1,0 +1,9 @@
+---
+- name: Base Server
+  hosts:
+    - base
+  tasks:
+    - name: Check connectivity
+      ansible.builtin.ping:
+        data: alive
+      tags: check

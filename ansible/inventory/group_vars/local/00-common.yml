@@ -1,0 +1,4 @@
+---
+env: local
+ansible_user: "{{ lookup('env', 'LOCALDEV_USER') | default(lookup('env', 'USER'), true) }}"
+ansible_host: "{{ lookup('env', 'LOCALDEV_HOST') | default('localhost', true) }}"

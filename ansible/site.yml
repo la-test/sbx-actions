@@ -1,0 +1,3 @@
+---
+- name: Import base playbook
+  import_playbook: base.yml
