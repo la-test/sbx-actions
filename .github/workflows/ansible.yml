@@ -52,6 +52,8 @@ jobs:
           libguestfs-tools \
           vagrant-libvirt \
           ruby-fog-libvirt \
+          nfs-common \
+          nfs-kernel-server \
           "
 
           sudo apt-get update && \
@@ -77,7 +79,9 @@ jobs:
         run: vagrant --version
 
       - name: Run vagrant up
-        run: vagrant up --provider=libvirt
+        run: |
+          #vagrant init debian/bookworm64
+          vagrant up --provider=libvirt
 
       - name: Check the logs
         run:
