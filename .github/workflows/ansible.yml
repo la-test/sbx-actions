@@ -60,6 +60,10 @@ jobs:
 
           sudo vagrant plugin install vagrant-libvirt
 
+          sudo setfacl -m user:$USER:rw /var/run/libvirt/libvirt-sock
+          sudo systemctl enable libvirtd
+          sudo systemctl start libvirtd
+
       - name: Cache Vagrant boxes
         id: cache_vgrant
         uses: actions/cache@v2
@@ -74,6 +78,11 @@ jobs:
 
       - name: Run vagrant up
         run: vagrant up --provider=libvirt
+
+      - name: Check the logs
+        run:
+          sudo journalctl -xae
+        if: always()
 
       - name: ssh into box after boot
         run: vagrant ssh -c "echo 'hello world!'"
