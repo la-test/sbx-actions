@@ -96,4 +96,4 @@ jobs:
         run: vagrant ssh -c "echo 'hello world!'"
 
       - name: ssh into box after boot
-        run: vagrant ssh -c "id -a && ls -lA . && cd /root/sbx-actions && ./ansible/files/update-deployment base-local"
+        run: vagrant ssh -- -l root -c "id -a && ls -lA . && cd /root/sbx-actions && ./ansible/files/update-deployment base-local"
