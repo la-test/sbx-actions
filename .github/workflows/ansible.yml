@@ -93,4 +93,9 @@ jobs:
           vagrant up --provider=libvirt --no-tty
 
       - name: Update deployment in vagrant guest
-        run: vagrant ssh -c "sudo /root/sbx-actions/ansible/files/update-deployment base-local"
+        run: |
+          vagrant ssh -c "sudo ls -lA /root"
+          vagrant ssh -c "sudo ls -lA /root/sbx-actions"
+          vagrant ssh -c "sudo ls -lA /root/sbx-actions/ansible"
+          vagrant ssh -c "sudo ls -lA /root/sbx-actions/ansible/files"
+          vagrant ssh -c "sudo /root/sbx-actions/ansible/files/update-deployment base-local"
