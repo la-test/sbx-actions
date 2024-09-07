@@ -92,8 +92,5 @@ jobs:
           #vagrant init debian/bookworm64
           vagrant up --provider=libvirt --no-tty
 
-      - name: ssh into box after boot
-        run: vagrant ssh -c "echo 'hello world!'"
-
-      - name: ssh into box after boot
-        run: vagrant ssh -c "sudo \"id -a && ls -lA . && cd /root/sbx-actions && ./ansible/files/update-deployment base-local\""
+      - name: Update deployment in vagrant guest
+        run: vagrant ssh -c "sudo /root/sbx-actions/ansible/files/update-deployment base-local"
