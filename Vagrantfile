@@ -9,10 +9,9 @@ Vagrant.configure("2") do |config|
     nfs_udp: false
 
   # Install the update-deployment script and the ssh key allowed to trigger it and checkout the code
-  config.vm.provision "shell", inline: "sudo touch /usr/local/sbin/update-deployment \
-    && sudo chmod 0755 /usr/local/sbin/update-deployment"
   config.vm.provision "file", source: "ansible/files/update-deployment",
-    destination: "/usr/local/sbin/update-deployment"
+    destination: "~/update-deployment"
+  config.vm.provision "shell", inline: "sudo mv ~/update-deployment /usr/local/sbin/update-deployment"
   #config.vm.provision "shell", inline: "sudo mkdir /root/.ssh && sudo chmod 0700 /root/.ssh"
   config.vm.provision "shell", inline: "sudo echo -n \"#{ENV['SSH_DEPLOYMENT_KEY']}\" \
     > /root/.ssh/id_ed25519 && sudo chmod 0600 /root/.ssh/id_ed25519"
