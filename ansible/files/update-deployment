@@ -35,12 +35,12 @@ cat /etc/ssh/ssh_host_ed25519_key.pub
 
 # Use the key to checkout the code and show some info
 cd /root
-# if [ ! -d "${url_repo}" ]; then
-#   git clone "${url}" "${url_repo}"
-# fi
+if [ ! -d "${url_repo}" ]; then
+  git clone "${url}" "${url_repo}"
+fi
 cd "${url_repo}"
-# git fetch origin
-# git checkout "${rev}"
+git fetch origin
+git checkout "${rev}"
 
 # Ensure ansible is installed as expected
 python3 -m venv --system-site-packages --symlinks .venv

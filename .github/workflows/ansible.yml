@@ -92,10 +92,22 @@ jobs:
           #vagrant init debian/bookworm64
           vagrant up --provider=libvirt --no-tty
 
-      - name: Update deployment in vagrant guest
+      - name: Load ssh key in agent
+        id: ssh_agent
+        uses: LeastAuthority/ssh-agent-action@v1
+        with:
+          private_key: ${{ secrets.DEPLOYMENT_SSH_KEY }}
+
+      - name: Deploy Ansible playbook on ${{ matrix.target }}
+        id: deploy_target
         run: |
-          vagrant ssh -c "sudo ls -lA /root"
-          vagrant ssh -c "sudo ls -lA /root/sbx-actions"
-          vagrant ssh -c "sudo ls -lA /root/sbx-actions/ansible"
-          vagrant ssh -c "sudo ls -lA /root/sbx-actions/ansible/files"
-          vagrant ssh -c "sudo /root/sbx-actions/ansible/files/update-deployment base-local"
+          # Specifying the target revision we want to deploy
+          target_rev=$(git log -n 1 --format='format:%H')
+          echo "Target revision: ${target_rev}"
+          echo -n "${target_rev}" | \
+          ssh -T -o "UserKnownHostsFile=ansible/ssh/known_hosts" "bot-cd@${{ matrix.target }}"
+
+#      - name: Update deployment in vagrant guest
+#        run: |
+#          vagrant ssh -c "sudo /root/sbx-actions/ansible/files/update-deployment base-local"
+
