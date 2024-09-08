@@ -8,15 +8,19 @@ Vagrant.configure("2") do |config|
     nfs_version: 4,
     nfs_udp: false
 
-  config.vm.provision "file", source: "ansible/files/update-deployment", destination: "/usr/local/sbin/update-deployment"
-  # Install required packages to install Ansible
-  config.vm.provision "shell", inline: "apt-get -q clean && \
-    apt-get -q update && \
-    apt-get install -y python3-pip python3-venv && \
-    apt-get -q clean"
+  # Install the update-deployment script and the ssh key allowed to trigger it and checkout the code
+  config.vm.provision "shell", inline: "sudo touch /usr/local/sbin/update-deployment \
+    && sudo chmod 0755 /usr/local/sbin/update-deployment"
+  config.vm.provision "file", source: "ansible/files/update-deployment",
+    destination: "/usr/local/sbin/update-deployment"
   #config.vm.provision "shell", inline: "sudo mkdir /root/.ssh && sudo chmod 0700 /root/.ssh"
   config.vm.provision "shell", inline: "sudo echo -n \"#{ENV['SSH_DEPLOYMENT_KEY']}\" \
     > /root/.ssh/id_ed25519 && sudo chmod 0600 /root/.ssh/id_ed25519"
   config.vm.provision "shell", inline: "sudo echo -n \"restrict,command=\"sudo \
     update-deployment base-local #{ENV['SSH_DEPLOYMENT_KEY_PUB']}\" >> /root/.ssh/authorized_keys"
+  # Install required packages to install Ansible
+  config.vm.provision "shell", inline: "apt-get -q clean && \
+    apt-get -q update && \
+    apt-get install -y python3-pip python3-venv && \
+    apt-get -q clean"
 end
