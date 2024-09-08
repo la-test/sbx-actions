@@ -16,8 +16,8 @@ Vagrant.configure("2") do |config|
   # Allow the deployment key to trigger the update and to checkout the code
   config.vm.provision "shell", inline: "sudo echo -n \"#{ENV['SSH_DEPLOYMENT_KEY']}\" \
     > /root/.ssh/id_ed25519 && sudo chmod 0600 /root/.ssh/id_ed25519"
-  config.vm.provision "shell", inline: "sudo echo -n \"restrict,command=\"sudo \
-    update-deployment base-local #{ENV['SSH_DEPLOYMENT_KEY_PUB']}\" >> /root/.ssh/authorized_keys"
+  config.vm.provision "shell", inline: "sudo echo -n 'restrict,command=\"sudo update-deployment \
+    base-local #{ENV['SSH_DEPLOYMENT_KEY_PUB']}\"' >> /root/.ssh/authorized_keys"
   # Install required packages to install Ansible
   config.vm.provision "shell", inline: "apt-get -q clean && \
     apt-get -q update && \
