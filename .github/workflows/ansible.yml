@@ -41,7 +41,6 @@ jobs:
       DEPLOYMENT_SSH_KEY: ${{ secrets.DEPLOYMENT_SSH_KEY }}
       DEPLOYMENT_USER: bot-cd
       DEPLOYMENT_TARGET: base-local
-      VAGRANT_EXPERIMENTAL: "cloud_init"
     steps:
       - name: Checkout
         id: checkout
@@ -63,7 +62,6 @@ jobs:
           ebtables \
           libguestfs-tools \
           ruby-fog-libvirt \
-          mkisofs \
           nfs-kernel-server \
           vagrant
           "
@@ -77,7 +75,6 @@ jobs:
           sudo systemctl start libvirtd
           # Install Vagrant plugins
           vagrant plugin install vagrant-libvirt
-          #vagrant plugin install vagrant-cloudinit
           # Show some info
           vagrant --version
           vagrant plugin list
@@ -120,4 +117,3 @@ jobs:
         if: always()
         run: |
           vagrant ssh -c "sudo journalctl --no-pager"
-          vagrant ssh -c "sudo cat /var/log/cloud-init*.log /run/cloud-init/*.log"

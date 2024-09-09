@@ -31,25 +31,30 @@ sudo chmod -R go-rwx /home/${DEPLOYMENT_USER}/.ssh
 cat <<EOF | tr -d '\n' | sudo sh -c "cat - /root/.ssh/git_deploy_key.pub >> /home/${DEPLOYMENT_USER}/.ssh/authorized_keys"
 restrict,command="sudo update-deployment ${DEPLOYMENT_TARGET}" 
 EOF
-sudo ls -lAR /home/${DEPLOYMENT_USER}
 SCRIPT
 
 Vagrant.configure("2") do |config|
   config.vm.define ENV['DEPLOYMENT_TARGET']
-#  config.vm.box = "debian/bookworm64"
-#  config.vm.box_version = "12.20240905.1"
-  config.vm.box = "cloud-image/debian-12"
-  config.vm.box_version = "20240717.1811.0"
+  config.vm.box = "debian/bookworm64"
+  config.vm.box_version = "12.20240905.1"
   config.vm.box_check_update = false
 
-  config.vm.cloud_init content_type: "text/cloud-config",
-    inline: <<-EOF
-      package_update: true
-      packages:
-        - git
-        - python3-pip
-        - python3-venv
-    EOF
+  # # No need to sync the working dir. with the guest boxess
+  # # Better use SFTP to transfer
+  # config.vm.synced_folder ".", "/vagrant", disabled: true
+
+  # # Tune LibVirt/QEmu guests
+  # config.vm.provider :libvirt do |domain|
+  #   # No need of graphics - better use serial
+  #   domain.graphics_type = "none"
+  #   domain.video_type = "none"
+  # end
+
+  config.vm.provision "shell", name: "Install requirements for deployment",
+    inline: "apt-get -q clean && \
+      apt-get -q update > /dev/null && \
+      apt-get -q install -y --no-install-recommends git python3-pip python3-venv > /dev/null && \
+      apt-get -q clean"
 
   # Install the update-deployment script itself
   config.vm.provision "file", source: "ansible/files/update-deployment",
