@@ -106,7 +106,7 @@ jobs:
       - name: Deploy Ansible playbook on Vagrant guest
         id: deploy_target
         run: |
-          git log -a
+          git log -n 10
           # Specifying the target revision we want to deploy
           target_rev=$(git log -n 1 --format='format:%H' "${GITHUB_REF#refs/heads/}")
           echo "Target revision: ${target_rev}"
