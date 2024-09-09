@@ -51,8 +51,7 @@ Vagrant.configure("2") do |config|
   # end
 
   config.vm.provision "shell", name: "Install requirements for deployment",
-    inline: "apt-get -q clean && \
-      apt-get -q update > /dev/null && \
+    inline: "apt-get -q update > /dev/null && \
       apt-get -q install -y --no-install-recommends git python3-pip python3-venv > /dev/null && \
       apt-get -q clean"
 
