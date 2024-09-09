@@ -3,7 +3,7 @@ $script = <<-SCRIPT
 #!/usr/bin/env bash
 
 # Configure bash behavior
-set -o xtrace   # print every call to help debugging
+#set -o xtrace   # print every call to help debugging
 set -o errexit  # exit on failed command
 set -o nounset  # exit on undeclared variables
 set -o pipefail # exit on any failed command in pipes
@@ -20,20 +20,25 @@ sudo sh -c "ssh-keygen -y -f /root/.ssh/git_deploy_key -P=\"\" > /root/.ssh/git_
 echo "Create a the deployment user"
 sudo adduser --disabled-password --gecos "" "${DEPLOYMENT_USER}"
 sudo adduser "${DEPLOYMENT_USER}" sudo
+sudo sh -c "cat - > /etc/sudoers.d/update-deployment" <<EOF
+${DEPLOYMENT_USER} ALL=(ALL) NOPASSWD: ALL
+EOF
 
 echo "Allow the deployment user to trigger the update"
-#DEPLOYMENT_SSH_KEY_PUB="$(sudo cat /root/.ssh/git_deploy_key.pub)"
-sudo mkdir /home/${DEPLOYMENT_USER}/.ssh && sudo chmod 0700 /home/${DEPLOYMENT_USER}/.ssh
+sudo -u ${DEPLOYMENT_USER} mkdir /home/${DEPLOYMENT_USER}/.ssh
+sudo -u ${DEPLOYMENT_USER} touch /home/${DEPLOYMENT_USER}/.ssh/authorized_keys
+sudo chmod -R go-rwx /home/${DEPLOYMENT_USER}/.ssh
 cat <<EOF | tr -d '\n' | sudo sh -c "cat - /root/.ssh/git_deploy_key.pub >> /home/${DEPLOYMENT_USER}/.ssh/authorized_keys"
 restrict,command="sudo update-deployment ${DEPLOYMENT_TARGET}" 
 EOF
+sudo ls -lAR /home/${DEPLOYMENT_USER}
 SCRIPT
 
 Vagrant.configure("2") do |config|
+  config.vm.define ENV['DEPLOYMENT_TARGET']
   config.vm.box = "debian/bookworm64"
   config.vm.box_version = "12.20240905.1"
   config.vm.box_check_update = false
-  config.vm.hostname = ENV['DEPLOYMENT_TARGET']
 
   config.vm.cloud_init content_type: "text/cloud-config",
   inline: <<-EOF
