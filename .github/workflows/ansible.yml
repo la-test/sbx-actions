@@ -56,7 +56,7 @@ jobs:
           libguestfs-tools \
           vagrant-libvirt \
           ruby-fog-libvirt \
-          nfs-common \
+          mkisofs \
           nfs-kernel-server \
           "
           # Installed required system packages for Vagrant
@@ -69,8 +69,11 @@ jobs:
           sudo setfacl -m user:$USER:rw /var/run/libvirt/libvirt-sock
           sudo systemctl enable libvirtd
           sudo systemctl start libvirtd
+          # Install cloud-init plugin
+          sudo vagrant plugin install vagrant-cloudinit
           # Show some info
           vagrant --version
+          vagrant plugin list
 
       - name: Cache Vagrant boxes
         id: vagrant_cache
@@ -110,4 +113,4 @@ jobs:
         if: always()
         run: |
           vagrant ssh -c "sudo journalctl --no-pager"
-          vagrant ssh -c "sudo ls -lA /var/log/cloud-init*.log /run/cloud-init/*.log"
+          vagrant ssh -c "sudo cat /var/log/cloud-init*.log /run/cloud-init/*.log"
