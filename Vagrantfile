@@ -34,16 +34,15 @@ Vagrant.configure("2") do |config|
   config.vm.box_check_update = false
   config.vm.hostname = ENV['DEPLOYMENT_TARGET']
 
-  # config.vm.synced_folder "./", "/root/sbx-actions",
-  #   type: "nfs",
-  #   nfs_version: 4,
-  #   nfs_udp: false
+  config.vm.cloud_init content_type: "text/cloud-config",
+  inline: <<-EOF
+    package_update: false
+    packages:
+      - git
+      - python3-pip
+      - python3-venv
+  EOF
 
-  config.vm.provision "shell", name: "Install requirements for deployment",
-    inline: "apt-get -q clean && \
-      apt-get -q update && \
-      apt-get -qq install -y --no-install-recommends python3-pip python3-venv && \
-      apt-get -q clean"
   # Install the update-deployment script itself
   config.vm.provision "file", source: "ansible/files/update-deployment",
     destination: "/tmp/update-deployment"
