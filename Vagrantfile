@@ -42,7 +42,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.cloud_init content_type: "text/cloud-config",
   inline: <<-EOF
-    package_update: false
+    package_update: true
     packages:
       - git
       - python3-pip
