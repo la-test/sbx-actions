@@ -81,7 +81,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-vagrant-
 
-      - name: Run vagrant up
+      - name: Vagrant up
         id: vagrant_up
         run: |
           vagrant up --provider=libvirt --no-tty
@@ -105,8 +105,9 @@ jobs:
           echo -n "${target_rev}" | \
           ssh -T -F vagrant-ssh "${DEPLOYMENT_USER}@${DEPLOYMENT_TARGET}"
 
-      - name: Show some logs from the Vagrant guest
+      - name: Show Vagrant guest logs
         id: vagrant_guest_logs
         if: always()
         run: |
           vagrant ssh -c "sudo journalctl --no-pager"
+          vagrant ssh -c "sudo ls -lA /var/log/cloud-init*.log /run/cloud-init/*.log"
