@@ -38,8 +38,9 @@ jobs:
     name: Ansible
     runs-on: ubuntu-22.04
     env:
+      DEPLOYMENT_SSH_KEY: ${{ secrets.DEPLOYMENT_SSH_KEY }}
       DEPLOYMENT_USER: bot-cd
-      DEPLOYMENT_HOST: base-local
+      DEPLOYMENT_TARGET: base-local
     steps:
       - name: Checkout
         id: checkout
@@ -100,4 +101,4 @@ jobs:
           target_rev=$(git log -n 1 --format='format:%H')
           echo "Target revision: ${target_rev}"
           echo -n "${target_rev}" | \
-          ssh -T -F vagrant-ssh "${DEPLOYMENT_USER}@${DEPLOYMENT_HOST}"
+          ssh -T -F vagrant-ssh "${DEPLOYMENT_USER}@${DEPLOYMENT_TARGET}"
