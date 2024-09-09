@@ -36,18 +36,20 @@ SCRIPT
 
 Vagrant.configure("2") do |config|
   config.vm.define ENV['DEPLOYMENT_TARGET']
-  config.vm.box = "debian/bookworm64"
-  config.vm.box_version = "12.20240905.1"
+#  config.vm.box = "debian/bookworm64"
+#  config.vm.box_version = "12.20240905.1"
+  config.vm.box = "cloud-image/debian-12"
+  config.vm.box_version = "20240717.1811.0"
   config.vm.box_check_update = false
 
   config.vm.cloud_init content_type: "text/cloud-config",
-  inline: <<-EOF
-    package_update: true
-    packages:
-      - git
-      - python3-pip
-      - python3-venv
-  EOF
+    inline: <<-EOF
+      package_update: true
+      packages:
+        - git
+        - python3-pip
+        - python3-venv
+    EOF
 
   # Install the update-deployment script itself
   config.vm.provision "file", source: "ansible/files/update-deployment",
