@@ -58,6 +58,7 @@ pip install --no-cache --upgrade -r docker/ansible/requirements.txt
 
 # Then check and apply the related ansible playbook
 cd ansible
+ls -lA
 export LANG=C.UTF-8
 export ANSIBLE_FORCE_COLOR=True
 ansible-playbook "${ansible_opts[@]}" --check site.yml | cat -
