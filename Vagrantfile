@@ -22,10 +22,11 @@ sudo adduser --disabled-password --gecos "" "${DEPLOYMENT_USER}"
 sudo adduser "${DEPLOYMENT_USER}" sudo
 
 echo "Allow the deployment user to trigger the update"
-sudo sh -c "echo -n \"restrict,command=\\\"sudo update-deployment ${DEPLOYMENT_TARGET}\\\" \" \
-  >> /home/${DEPLOYMENT_USER}/.ssh/authorized_keys"
-sudo sh -c "cat /root/.ssh/git_deploy_key.pub \
-  >> /home/${DEPLOYMENT_USER}/.ssh/authorized_keys"
+#DEPLOYMENT_SSH_KEY_PUB="$(sudo cat /root/.ssh/git_deploy_key.pub)"
+sudo mkdir /home/${DEPLOYMENT_USER}/.ssh && sudo chmod 0700 /home/${DEPLOYMENT_USER}/.ssh
+cat <<EOF | tr -d '\n' | sudo sh -c "cat - /root/.ssh/git_deploy_key.pub >> /home/${DEPLOYMENT_USER}/.ssh/authorized_keys"
+restrict,command="sudo update-deployment ${DEPLOYMENT_TARGET}" 
+EOF
 SCRIPT
 
 Vagrant.configure("2") do |config|
