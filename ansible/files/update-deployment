@@ -48,7 +48,7 @@ if [ ! -d "${url_repo}" ]; then
   git clone "${url}" "${url_repo}"
 fi
 cd "${url_repo}"
-git fetch origin
+git fetch --all
 git checkout "${rev}"
 
 # Ensure ansible is installed as expected
