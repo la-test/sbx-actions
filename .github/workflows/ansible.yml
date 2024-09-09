@@ -36,7 +36,7 @@ on:
 jobs:
   ansible:
     name: Ansible
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     env:
       DEPLOYMENT_SSH_KEY: ${{ secrets.DEPLOYMENT_SSH_KEY }}
       DEPLOYMENT_USER: bot-cd
@@ -49,28 +49,34 @@ jobs:
       - name: Setup Vagrant
         id: vagrant_setup
         run: |
+          wget -O- https://apt.releases.hashicorp.com/gpg \
+          | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+          echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] \
+          https://apt.releases.hashicorp.com $(lsb_release -cs) main" \
+          | sudo tee /etc/apt/sources.list.d/hashicorp.list
+
           PACKAGES="\
-          qemu \
           libvirt-daemon-system \
+          libvirt-dev \
+          dnsmasq \
           ebtables \
           libguestfs-tools \
-          vagrant-libvirt \
           ruby-fog-libvirt \
           mkisofs \
           nfs-kernel-server \
+          vagrant
           "
           # Installed required system packages for Vagrant
-          sudo apt-get -q update && \
+          sudo apt-get -q update > /dev/null && \
           sudo apt-get -q install --no-install-recommends -y ${PACKAGES} > /dev/null && \
           sudo apt-get -q clean
-          # Update Vagrant libvirt plugin (should we not stick to the debian one?)
-          sudo vagrant plugin install vagrant-libvirt
           # Fix wrong permissions on libvirt socket
           sudo setfacl -m user:$USER:rw /var/run/libvirt/libvirt-sock
           sudo systemctl enable libvirtd
           sudo systemctl start libvirtd
-          # Install cloud-init plugin
-          sudo vagrant plugin install vagrant-cloudinit
+          # Install Vagrant plugins
+          vagrant plugin install vagrant-libvirt
+          vagrant plugin install vagrant-cloudinit
           # Show some info
           vagrant --version
           vagrant plugin list
