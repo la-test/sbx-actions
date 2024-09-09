@@ -39,16 +39,21 @@ Vagrant.configure("2") do |config|
   config.vm.box_version = "12.20240905.1"
   config.vm.box_check_update = false
 
-  # # No need to sync the working dir. with the guest boxess
-  # # Better use SFTP to transfer
-  # config.vm.synced_folder ".", "/vagrant", disabled: true
-
   # # Tune LibVirt/QEmu guests
   # config.vm.provider :libvirt do |domain|
   #   # No need of graphics - better use serial
   #   domain.graphics_type = "none"
   #   domain.video_type = "none"
   # end
+
+  # Provision the repo where the deployement scrip will expect it
+  config.vm.synced_folder ".", "/vagrant",
+    type: "nfs",
+    nfs_version: 4,
+    nfs_udp: false
+  config.vm.provision "shell", name: "Move repo in root directory",
+    inline: "sudo cp -a /vagrant /root/#{ENV['DEPLOYMENT_REPO']} && \
+      chown -R root:root /root/#{ENV['DEPLOYMENT_REPO']}"
 
   config.vm.provision "shell", name: "Install requirements for deployment",
     inline: "apt-get -q update > /dev/null && \
