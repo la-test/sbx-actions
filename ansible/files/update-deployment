@@ -23,12 +23,13 @@ ansible_opts=( '-i' 'inventory' '--limit' "${target}" "--connection" "local" )
 test -d ~/.ssh || mkdir ~/.ssh
 echo "${url_host} ${url_host_key}" > ~/.ssh/known_hosts
 
-# Load the existing private key used by sshd
-# TODO: considering generating a new key for that purpose only or one for all provisioned once?
-export GIT_SSH_COMMAND="ssh -i /etc/ssh/ssh_host_ed25519_key"
+# Generate an ssh key to checkout the code
+SSH_KEY="~/.ssh/git_deploy_key"
+test -f "${SSH_KEY}" || ssh-keygen -q -t ed25519 -f "${SSH_KEY}" -N=''
+export GIT_SSH_COMMAND="ssh -i ${SSH_KEY}"
 # Print the public key, in case it has not been yet authorized
 echo "Public key used to access ${url_host}:"
-cat /etc/ssh/ssh_host_ed25519_key.pub
+cat ${SSH_KEY}.pub"
 
 # Verify the authentication a few times to give a chance to authorize read access for a new key
 (r=3;while ! (${GIT_SSH_COMMAND} -T "${url_user}@${url_host}" || [ $? -eq 1 ]); do ((--r))||exit;sleep 10;done)
