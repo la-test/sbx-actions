@@ -111,9 +111,3 @@ jobs:
           echo "Target revision: ${target_rev}"
           echo -n "${target_rev}" | \
           ssh -T -F vagrant-ssh "${DEPLOYMENT_USER}@${DEPLOYMENT_TARGET}"
-
-      - name: Show Vagrant guest logs
-        id: vagrant_guest_logs
-        if: always()
-        run: |
-          vagrant ssh -c "sudo journalctl --no-pager"
