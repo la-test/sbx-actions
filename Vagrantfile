@@ -17,23 +17,25 @@ Vagrant.configure("2") do |config|
   # Install the update-deployment script itself
   config.vm.provision "file", source: "ansible/files/update-deployment",
     destination: "/tmp/update-deployment"
-  config.vm.provision "shell", inline: "sudo mv /tmp/update-deployment /usr/local/sbin/update-deployment"
-  config.vm.provision "shell", inline: "sudo chown root:root /usr/local/sbin/update-deployment"
-  # Provide the deploy key for the root user to checkout the code
-  # We are conveniently re-using the deployment key twice here - only for CI
-  config.vm.provision "shell", inline: "sudo sh -c 'echo -n \"#{ENV['DEPLOYMENT_SSH_KEY']}\" \
-    > /root/.ssh/git_deploy_key' && sudo chmod 0600 /root/.ssh/git_deploy_key"
-  # Provide the public part for the later steps
-  config.vm.provision "shell", inline: "sudo sh -c 'ssh-keygen -y -f /root/.ssh/git_deploy_key -P=\'\' \
-    > /root/.ssh/git_deploy_key.pub'"
+  config.vm.provision "shell", name: "Move deployment script",
+    inline: "sudo mv /tmp/update-deployment /usr/local/sbin/update-deployment"
+  config.vm.provision "shell", name: "Change owner of deployment script",
+    inline: "sudo chown root:root /usr/local/sbin/update-deployment"
+  config.vm.provision "shell", name: "Provide deployment key to checkout the code",
+    inline: "sudo sh -c 'echo -n \"#{ENV['DEPLOYMENT_SSH_KEY']}\" \
+      > /root/.ssh/git_deploy_key' && sudo chmod 0600 /root/.ssh/git_deploy_key"
   config.vm.provision "shell", inline: "sudo cat /root/.ssh/git_deploy_key"
-  # Create a the deployment user...
-  config.vm.provision "shell", inline: "sudo adduser #{ENV['DEPLOYMENT_USER']} \
-    && sudo adduser #{ENV['DEPLOYMENT_USER']} sudo"
-  # ...only allowed to trigger the update...
-  config.vm.provision "shell", inline: "sudo sh -c 'echo -n \'restrict,command=\"sudo update-deployment \
-    #{ENV['DEPLOYMENT_HOST']}\" \' >> /home/#{ENV['DEPLOYMENT_USER']}/.ssh/authorized_keys'"
-  # ...using the the same deployment key used above (again - only for CI)
-  config.vm.provision "shell", inline: "sudo sh -c 'cat /root/.ssh/git_deploy_key.pub \
-    >> /home/#{ENV['DEPLOYMENT_USER']}/.ssh/authorized_keys'"
+  config.vm.provision "shell", name: "Provide public part of the key for later",
+    inline: "sudo sh -c 'ssh-keygen -y -f /root/.ssh/git_deploy_key -P=\'\' \
+    > /root/.ssh/git_deploy_key.pub'"
+  # We will conveniently re-using the deployment key twice here, but only for CI
+  config.vm.provision "shell", name: "Create a the deployment user",
+    inline: "sudo adduser #{ENV['DEPLOYMENT_USER']} \
+      && sudo adduser #{ENV['DEPLOYMENT_USER']} sudo"
+  config.vm.provision "shell", name: "Allow the deployment user to trigger the update",
+    inline: "sudo sh -c 'echo -n \'restrict,command=\"sudo update-deployment \
+      #{ENV['DEPLOYMENT_HOST']}\" \' >> /home/#{ENV['DEPLOYMENT_USER']}/.ssh/authorized_keys'"
+  config.vm.provision "shell", name: "Re-using the deployment key used to checkout",
+    inline: "sudo sh -c 'cat /root/.ssh/git_deploy_key.pub \
+      >> /home/#{ENV['DEPLOYMENT_USER']}/.ssh/authorized_keys'"
 end
