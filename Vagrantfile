@@ -5,12 +5,6 @@ Vagrant.configure("2") do |config|
   config.vm.box_version = "12.20240905.1"
   config.vm.box_check_update = false
 
-  # Tune LibVirt/QEmu guests
-  config.vm.provider :libvirt do |domain|
-    # No need of graphics - better use serial
-    domain.graphics_type = "none"
-  end
-
   # Avoid the default synchronization
   config.vm.synced_folder ".", "/vagrant", disabled: true
 
