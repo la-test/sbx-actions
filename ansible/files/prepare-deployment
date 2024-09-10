@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# This script prepare Ansible requirements for pull-mode deployment
+# This script prepares the requirements for the update-deployment script
 # It may be used by Ansible or other provisioners such as Vagrant
 
 # Configure bash behavior

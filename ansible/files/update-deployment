@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# This script performs a pull-mode deployment with Ansible
+# Its requirements can be provided with the prepare-deployment script
+
 # Configure bash behavior
 set -o xtrace   # print every call to help debugging
 set -o errexit  # exit on failed command
