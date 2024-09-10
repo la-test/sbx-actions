@@ -8,6 +8,16 @@ set -o errexit  # exit on failed command
 set -o nounset  # exit on undeclared variables
 set -o pipefail # exit on any failed command in pipes
 
+echo "Ensure the required system packages are installed for the deployment"
+export DEBIAN_FRONTEND=noninteractive
+apt-get -q update > /dev/null
+apt-get -q install -y --no-install-recommends git python3-pip python3-venv > /dev/null
+apt-get -q clean
+
+echo "Install the deployment script itself"
+sudo cp -a "/root/${DEPLOYMENT_REPO}/ansible/files/update-deployment" /usr/local/sbin/update-deployment
+sudo chmod +x /usr/local/sbin/update-deployment
+
 echo "Provision deployment private key to checkout the code"
 deploy_key="/root/.ssh/deploy_key"
 sudo sh -c "cat - > \"${deploy_key}\"" <<EOF
@@ -48,33 +58,19 @@ Vagrant.configure("2") do |config|
   #   domain.video_type = "none"
   # end
 
-  # Provision the repo where the deployement scrip will expect it
-  config.vm.synced_folder ".", "/vagrant",
+  # Provision the repo where the deployment script expects it
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+  config.vm.synced_folder ".", "/root/#{ENV['DEPLOYMENT_REPO']}",
     type: "nfs",
     nfs_version: 4,
     nfs_udp: false
-  config.vm.provision "shell", name: "Provide repo in root directory",
-    inline: "sudo cp -a /vagrant /root/#{ENV['DEPLOYMENT_REPO']} && \
-      chown -R root:root /root/#{ENV['DEPLOYMENT_REPO']}"
 
-  config.vm.provision "shell", name: "Install requirements for deployment",
-    inline: "export DEBIAN_FRONTEND=noninteractive \
-      && apt-get -q update > /dev/null \
-      && apt-get -q install -y --no-install-recommends git python3-pip python3-venv > /dev/null \
-      && apt-get -q clean"
-
-  # Install the update-deployment script itself
-  config.vm.provision "file", source: "ansible/files/update-deployment",
-    destination: "/tmp/update-deployment"
-  config.vm.provision "shell", name: "Move deployment script",
-    inline: "sudo mv /tmp/update-deployment /usr/local/sbin/update-deployment"
-  config.vm.provision "shell", name: "Change owner of deployment script",
-    inline: "sudo chown root:root /usr/local/sbin/update-deployment"
   config.vm.provision "shell", name: "Allow a user to execute the deployment script",
     inline: $script,
     env: { # Pass environment variables to the guest
       "DEPLOYMENT_SSH_KEY" => ENV['DEPLOYMENT_SSH_KEY'],
       "DEPLOYMENT_USER" => ENV['DEPLOYMENT_USER'],
       "DEPLOYMENT_TARGET" => ENV['DEPLOYMENT_TARGET'],
+      "DEPLOYMENT_REPO" => ENV['DEPLOYMENT_REPO'],
     }
 end
