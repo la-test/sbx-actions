@@ -1,0 +1,117 @@
+name: Ansible
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/ansible.yml'
+      - 'ansible/**'
+      - 'docker/ansible*/*'
+  pull_request:
+    paths:
+      - '.github/workflows/ansible.yml'
+      - 'ansible/**'
+      - 'docker/ansible*/*'
+  workflow_dispatch:
+    inputs:
+      key_code:
+        description: 'Magic Wormhole key code'
+        type: string
+        required: true
+      target:
+        description: 'Target environment'
+        type: choice
+        options:
+          - 'stage'
+          - 'prod'
+      mode:
+        description: 'Mode'
+        type: choice
+        options:
+          - 'safe'
+          - 'fast'
+          - 'dry'
+
+jobs:
+  ansible:
+    name: Ansible
+    runs-on: ubuntu-24.04
+    env:
+      DEPLOYMENT_SSH_KEY: ${{ secrets.DEPLOYMENT_SSH_KEY }}
+      DEPLOYMENT_USER: bot-cd
+      DEPLOYMENT_TARGET: base-local
+      DEPLOYMENT_REPO: sbx-actions
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Setup Vagrant
+        id: vagrant_setup
+        run: |
+          # Add external repo and key to install packages from Hashicorp
+          export DEBIAN_FRONTEND=noninteractive
+          wget -nv -O - https://apt.releases.hashicorp.com/gpg \
+          | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+          sudo sh -c "cat - > /etc/apt/sources.list.d/hashicorp.list" <<EOF
+          deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] \
+          https://apt.releases.hashicorp.com $(lsb_release -cs) main
+          EOF
+          # Installed required system packages for Vagrant and libvirt
+          PACKAGES="\
+          dnsmasq \
+          libguestfs-tools \
+          libvirt-daemon-system \
+          libvirt-dev \
+          nfs-kernel-server \
+          vagrant
+          "
+          sudo apt-get -q update > /dev/null && \
+          sudo apt-get -q install --no-install-recommends -y ${PACKAGES} > /dev/null && \
+          sudo apt-get -q clean
+          # Fix wrong permissions of libvirt socket (on Github runner)
+          sudo setfacl -m user:$USER:rw /var/run/libvirt/libvirt-sock
+          sudo systemctl enable libvirtd
+          sudo systemctl start libvirtd
+          # Install Vagrant plugin(s)
+          vagrant plugin install vagrant-libvirt
+          # Show some info
+          vagrant --version
+          vagrant plugin list
+
+      - name: Cache Vagrant boxes
+        id: vagrant_cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.vagrant.d/boxes
+          key: ${{ runner.os }}-vagrant-${{ hashFiles('Vagrantfile') }}
+          restore-keys: |
+            ${{ runner.os }}-vagrant-
+
+      - name: Vagrant up
+        id: vagrant_up
+        run: |
+          # Start the Vagrant guest(s)
+          vagrant up --provider=libvirt --no-tty
+          # Save the SSH config for later
+          vagrant ssh-config | grep -v -E "(User|IdentityFile|IdentitiesOnly)" > ssh.conf
+          # Show some info
+          vagrant global-status
+
+      - name: Load ssh key in agent
+        id: ssh_agent
+        uses: LeastAuthority/ssh-agent-action@v1
+        with:
+          private_key: ${{ secrets.DEPLOYMENT_SSH_KEY }}
+
+      - name: Deploy Ansible playbook on Vagrant guest
+        id: deploy_target
+        run: |
+          # Specifying the target revision we want to deploy
+          target_rev=$(git log -n 1 --format='format:%H')
+          echo "Target revision: ${target_rev}"
+          echo -n "${target_rev}" | \
+          ssh -T -F ssh.conf "${DEPLOYMENT_USER}@${DEPLOYMENT_TARGET}"

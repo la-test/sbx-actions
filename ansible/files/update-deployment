@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+
+# This script performs a pull-mode deployment with Ansible
+# Its requirements can be provided with the prepare-deployment script
+
+# Configure bash behavior
+set -o xtrace   # print every call to help debugging
+set -o errexit  # exit on failed command
+set -o nounset  # exit on undeclared variables
+set -o pipefail # exit on any failed command in pipes
+
+# Read the arguments
+target=${1?"Unknown target"}
+reference=${2-main}
+
+# Read the revision from stdin
+read -s -r -N 40 -t 1 rev || { echo "Could not read the 40 bytes long revision from stdin!"; exit 1; }
+# Sanity check the revision
+if ! [[ ${rev} =~ [0-9a-f]{40} ]]; then
+  echo "Could not parse the 40 bytes long revision from stdin!"
+  exit 1
+fi
+
+# Set some constants for our deployment
+url_user='git'
+url_host='github.com'
+url_owner='la-test'
+url_repo='sbx-actions'
+url="${url_user}@${url_host}:${url_owner}/${url_repo}"
+url_host_key='ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl'
+ansible_opts=( '-i' 'inventory' '--limit' "${target}" "--connection" "local" )
+git_ssh_key="${HOME}/.ssh/deploy_key"
+
+# Overwrite (for now) the known_hosts with the git server key
+test -d "${HOME}/.ssh" || mkdir "${HOME}/.ssh"
+echo "${url_host} ${url_host_key}" > "${HOME}/.ssh/known_hosts"
+
+# Generate an ssh key to checkout the code if not provided
+test -f "${git_ssh_key}" || ssh-keygen -q -t ed25519 -f "${git_ssh_key}" -N=""
+export GIT_SSH_COMMAND="ssh -i ${git_ssh_key}"
+# Derive the public key if not provided
+test -f "${git_ssh_key}.pub" || ssh-keygen -y -f /root/.ssh/git_deploy_key -P="" \
+> "${git_ssh_key}.pub"
+# Print the public key, in case it has not been yet authorized to checkout
+echo "Public key used to access ${url_host}:"
+cat "${git_ssh_key}.pub"
+
+# Verify the authentication a few times to give a chance to authorize read access for a new key
+(r=3;while ! (${GIT_SSH_COMMAND} -T "${url_user}@${url_host}" || [ $? -eq 1 ]); do ((--r))||exit;sleep 10;done)
+
+# Use the key to checkout the code and show some info
+cd "${HOME}"
+test -d "${url_repo}" || git clone "${url}" "${url_repo}"
+cd "${url_repo}"
+git fetch origin
+git checkout "${rev}"
+
+# Ensure ansible is installed as expected
+python3 -m venv --system-site-packages --symlinks .venv
+source .venv/bin/activate
+pip install --no-cache --upgrade -r docker/ansible/requirements.txt
+
+# Then check and apply the related ansible playbook
+cd ansible
+export LANG=C.UTF-8
+export ANSIBLE_FORCE_COLOR=True
+ansible-playbook "${ansible_opts[@]}" --check site.yml | cat -
+ansible-playbook "${ansible_opts[@]}" site.yml | cat -

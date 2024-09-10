@@ -1,0 +1,11 @@
+---
+all:
+  children:
+    # All local hosts
+    local:
+      hosts:
+        base-local:
+    # Grouped by application
+    base:
+      hosts:
+        base-local:
