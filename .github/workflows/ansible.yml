@@ -52,31 +52,31 @@ jobs:
       - name: Setup Vagrant
         id: vagrant_setup
         run: |
-          wget -O- https://apt.releases.hashicorp.com/gpg \
+          # Add external repo and key to install packages from Hashicorp
+          export DEBIAN_FRONTEND=noninteractive
+          wget -nv -O - https://apt.releases.hashicorp.com/gpg \
           | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
-          echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] \
-          https://apt.releases.hashicorp.com $(lsb_release -cs) main" \
-          | sudo tee /etc/apt/sources.list.d/hashicorp.list
-
+          sudo sh -c "cat - > /etc/apt/sources.list.d/hashicorp.list" <<EOF
+          deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] \
+          https://apt.releases.hashicorp.com $(lsb_release -cs) main
+          EOF
+          # Installed required system packages for Vagrant and libvirt
           PACKAGES="\
+          dnsmasq \
+          libguestfs-tools \
           libvirt-daemon-system \
           libvirt-dev \
-          dnsmasq \
-          ebtables \
-          libguestfs-tools \
-          ruby-fog-libvirt \
           nfs-kernel-server \
           vagrant
           "
-          # Installed required system packages for Vagrant
           sudo apt-get -q update > /dev/null && \
           sudo apt-get -q install --no-install-recommends -y ${PACKAGES} > /dev/null && \
           sudo apt-get -q clean
-          # Fix wrong permissions on libvirt socket
+          # Fix wrong permissions of libvirt socket (on Github runner)
           sudo setfacl -m user:$USER:rw /var/run/libvirt/libvirt-sock
           sudo systemctl enable libvirtd
           sudo systemctl start libvirtd
-          # Install Vagrant plugins
+          # Install Vagrant plugin(s)
           vagrant plugin install vagrant-libvirt
           # Show some info
           vagrant --version
@@ -94,9 +94,10 @@ jobs:
       - name: Vagrant up
         id: vagrant_up
         run: |
+          # Start the Vagrant guest(s)
           vagrant up --provider=libvirt --no-tty
           # Save the SSH config for later
-          vagrant ssh-config | grep -v -E "(User|IdentityFile|IdentitiesOnly)" > vagrant-ssh
+          vagrant ssh-config | grep -v -E "(User|IdentityFile|IdentitiesOnly)" > ssh.conf
           # Show some info
           vagrant global-status
 
@@ -113,4 +114,4 @@ jobs:
           target_rev=$(git log -n 1 --format='format:%H')
           echo "Target revision: ${target_rev}"
           echo -n "${target_rev}" | \
-          ssh -T -F vagrant-ssh "${DEPLOYMENT_USER}@${DEPLOYMENT_TARGET}"
+          ssh -T -F ssh.conf "${DEPLOYMENT_USER}@${DEPLOYMENT_TARGET}"
