@@ -1,0 +1,28 @@
+# Workflow to continuously integrate Ansible playbook with e2e test
+# for the Magic Wormhole backend managed by Least Authority TFA
+name: Ansible e2e
+
+on:
+  push:
+    branches:
+      - main
+      - stable
+    paths:
+      - '.github/workflows/ansible.yml'
+      - 'ansible/**'
+      - 'docker/ansible*/*'
+  pull_request:
+    paths:
+      - '.github/workflows/ansible.yml'
+      - 'ansible/**'
+      - 'docker/ansible*/*'
+
+jobs:
+  call-workflow-passing-data:
+    # Call the re-usable Terraform workflow
+    uses: ./.github/workflows/_ansible_e2e.yml
+    with:
+      deployment_user: 'bot-cd'
+      deployment_target: 'base-local'
+    secrets:
+      deployment_ssh_key: ${{ secrets.TEST_SSH_KEY }}
