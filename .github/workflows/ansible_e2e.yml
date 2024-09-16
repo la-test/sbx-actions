@@ -3,14 +3,6 @@
 name: Ansible e2e
 
 on:
-  push:
-    branches:
-      - main
-      - stable
-    paths:
-      - '.github/workflows/ansible.yml'
-      - 'ansible/**'
-      - 'docker/ansible*/*'
   pull_request:
     paths:
       - '.github/workflows/ansible.yml'

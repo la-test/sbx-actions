@@ -33,10 +33,10 @@ test -d "${HOME}/.ssh" || mkdir "${HOME}/.ssh"
 echo "${url_host} ${url_host_key}" > "${HOME}/.ssh/known_hosts"
 
 # Generate an ssh key to checkout the code if not provided
-test -f "${git_ssh_key}" || ssh-keygen -q -t ed25519 -f "${git_ssh_key}" -N=""
+test -f "${git_ssh_key}" || ssh-keygen -q -t ed25519 -f "${git_ssh_key}" -N ""
 export GIT_SSH_COMMAND="ssh -i ${git_ssh_key}"
 # Derive the public key if not provided
-test -f "${git_ssh_key}.pub" || ssh-keygen -y -f /root/.ssh/git_deploy_key -P="" \
+test -f "${git_ssh_key}.pub" || ssh-keygen -y -f /root/.ssh/git_deploy_key -P "" \
 > "${git_ssh_key}.pub"
 # Print the public key, in case it has not been yet authorized to checkout
 echo "Public key used to access ${url_host}:"
