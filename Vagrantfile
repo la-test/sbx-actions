@@ -58,7 +58,7 @@ sudo chmod 0600 /root/.ssh/deploy_key
 EOS
 
   config.vm.provision "shell", name: "Requirements for pull-mode deployment",
-    path: "bootstrap-deployment.sh",
+    path: "helpers/bootstrap-deployment.sh",
     args: [
       "/root/#{repo_name}/ansible/files/update-deployment",
     ]
