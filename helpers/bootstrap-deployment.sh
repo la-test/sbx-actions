@@ -27,7 +27,7 @@ chmod +x /usr/local/sbin/update-deployment
 
 echo "Generate public part of the key if needed"
 test -f "${deploy_key}.pub" \
-|| ssh-keygen -y -f "${deploy_key}" -P="" > "${deploy_key}.pub"
+|| ssh-keygen -y -f "${deploy_key}" -P "" > "${deploy_key}.pub"
 
 echo "Create a the deployment user"
 adduser --disabled-password --gecos "" "${deploy_user}"
