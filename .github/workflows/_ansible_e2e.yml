@@ -1,0 +1,127 @@
+# Re-usable workflow to continuously integrate Ansible playbooks
+# using end-to-end testing based on Vagrant
+
+on:
+  workflow_call:
+    inputs:
+      vagrant_version:
+        description: 'Version of Vagrant runtime to use'
+        required: false
+        type: string
+        default: '2.4.1-1'
+      vagrant_libvirt_version:
+        description: 'Version of Libvirt plugin for Vagrant to use'
+        required: false
+        type: string
+        default: '0.12.2'
+      gh_runner_version:
+        description: 'Version of the GitHub runner to use'
+        required: false
+        type: string
+        default: 'ubuntu-24.04'
+      deployment_user:
+        description: 'Username to trigger the deployment'
+        required: true
+        type: string
+      deployment_target:
+        description: 'Inventory host or group to limit the deployment'
+        required: true
+        type: string
+    secrets:
+      deployment_ssh_key:
+        description: 'SSH key used to trigger the deployment'
+        required: false
+
+jobs:
+  ansible_e2e:
+    name: Ansible end-to-end testing
+    runs-on: ${{ inputs.gh_runner_version }}
+    env:
+      # Those variables will (also) be consumed in the Vagrantfile
+      DEPLOYMENT_SSH_KEY: ${{ secrets.deployment_ssh_key }}
+      DEPLOYMENT_USER:  ${{ inputs.deployment_user }}
+      DEPLOYMENT_TARGET: ${{ inputs.deployment_target }}
+      # The target above should match a single host from the Ansible inventory
+      # It could be any host, but better be something dedicated for testing
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+
+      - name: Add Vagrant repo
+        id: vagrant_repo
+        run: |
+          # Add external repo and key to install packages from Hashicorp
+          export DEBIAN_FRONTEND=noninteractive
+          wget -nv -O - https://apt.releases.hashicorp.com/gpg \
+          | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+          sudo sh -c "cat - > /etc/apt/sources.list.d/hashicorp.list" <<EOF
+          deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] \
+          https://apt.releases.hashicorp.com $(lsb_release -cs) main
+          EOF
+          sudo apt-get -q update > /dev/null
+
+      - name: Install packages
+        id: packages_install
+        run: |
+          REQUIRED_PACKAGES="\
+          dnsmasq \
+          libguestfs-tools \
+          libvirt-daemon-system \
+          libvirt-dev \
+          nfs-kernel-server \
+          vagrant=${{ inputs.vagrant_version }}\
+          "
+          sudo apt-get -q install --no-install-recommends --assume-yes ${REQUIRED_PACKAGES} >/dev/null
+          # The required packages are not pinned to a specific version,
+          # so let's print the last apt transaction in the logs
+          sudo tail -5 /var/log/apt/history.log | sed -r -e 's/\), /)\n/g'
+
+      - name: Prepare Vagrant
+        id: vagrant_setup
+        run: |
+          # Fix wrong permissions of libvirt socket (on Github runner)
+          sudo setfacl -m user:$USER:rw /var/run/libvirt/libvirt-sock
+          sudo systemctl enable libvirtd
+          sudo systemctl start libvirtd
+          # Install Vagrant plugin(s)
+          vagrant plugin install vagrant-libvirt --plugin-version=${{ inputs.vagrant_libvirt_version }}
+          # Show some info about the setup
+          vagrant --version
+          vagrant plugin list
+          hostnamectl
+
+      - name: Start Vagrant boxe(s)
+        id: vagrant_start
+        run: |
+          # Start the Vagrant guest(s) if needed
+          export DEPLOYMENT_REPO="$(echo ${{ github.repository }} | cut -d/ -f2)"
+          vagrant up --provider=libvirt --no-tty
+          # Save the SSH config for later
+          vagrant ssh-config | grep -v -E "(User|IdentityFile|IdentitiesOnly)" > ssh.conf
+          # Show some info
+          vagrant global-status
+
+      - name: Load ssh key in agent
+        id: ssh_agent
+        uses: LeastAuthority/ssh-agent-action@v1
+        with:
+          private_key: ${{ env.DEPLOYMENT_SSH_KEY }}
+          auth_sock_path: ~/S.agent.ssh
+
+      - name: Deploy Ansible playbook on ${{ env.DEPLOYMENT_TARGET }}
+        id: deploy_target
+        run: |
+          # Specifying the target revision we want to deploy
+          target_rev=$(git log -n 1 --format='format:%H')
+          echo "Target revision: ${target_rev}"
+          echo -n "${target_rev}" | \
+          ssh -T -F ssh.conf "${DEPLOYMENT_USER}@${DEPLOYMENT_TARGET}"
+
+      - name: Stop Vagrant boxe(s)
+        id: vagrant_stop
+        run: |
+          # Stop the Vagrant guest(s)
+          vagrant halt --no-tty
+          # Show some info
+          vagrant global-status
