@@ -95,10 +95,21 @@ jobs:
           END_OF_KEY
           DEPLOYMENT_TARGET=${{ inputs.deployment_target }}
           EOF
+          # Alter permissions before caching
+          sudo chown -R $(id -u):$(id -g) /var/lib/libvirt/images
 
-      - name: Start Vagrant boxe(s)
+      - name: Cache Vagrant
+        id: vagrant_cache
+        uses: actions/cache@v4
+        with:
+          path: /var/lib/libvirt/images/*box*.img
+          key: ${{ runner.os }}-Vagrant-${{ hashFiles('/var/lib/libvirt/images/*box*.img') }}
+
+      - name: Start Vagrant
         id: vagrant_start
         run: |
+          # Restore permissions after caching
+          sudo chown -R libvirt-qemu:kvm /var/lib/libvirt/images
           # Start the Vagrant guest(s)
           vagrant up --provider=libvirt --no-tty
           # Save the SSH config for later
@@ -122,7 +133,7 @@ jobs:
           echo -n "${target_rev}" | \
           ssh -T -F ssh.conf "${DEPLOYMENT_USER}@${DEPLOYMENT_TARGET}"
 
-      - name: Stop Vagrant boxe(s)
+      - name: Stop Vagrant
         id: vagrant_stop
         run: |
           # Stop the Vagrant guest(s)
