@@ -2,7 +2,7 @@
 # vi: set ft=ruby :
 
 host_name = ENV.has_key?('DEPLOYMENT_TARGET') ? ENV['DEPLOYMENT_TARGET'] : 'base-local'
-repo_name = ENV.has_key?('DEPLOYMENT_REPO') ? ENV['DEPLOYMENT_REPO'] : abort("Repo is undefinned!")
+repo_name = ENV.has_key?('DEPLOYMENT_REPO') ? ENV['DEPLOYMENT_REPO'] : abort("Repo is undefined!")
 ssh_key = ENV.has_key?('DEPLOYMENT_SSH_KEY') ? ENV['DEPLOYMENT_SSH_KEY'] : abort("SSH key is undefined!")
 
 # Get a dedicated LibVirt pool name or use default one
