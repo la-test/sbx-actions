@@ -36,6 +36,7 @@ jobs:
   ansible_e2e:
     name: Ansible end-to-end testing
     runs-on: ${{ inputs.gh_runner_version }}
+    timeout-minutes: 20
     env:
       # Those variables will (also) be consumed in the Vagrantfile
       DEPLOYMENT_SSH_KEY: ${{ secrets.deployment_ssh_key }}
@@ -90,13 +91,12 @@ jobs:
           vagrant --version
           vagrant plugin list
           hostnamectl
+          # Prepare env. variable required in the Vagrantfile
+          echo "DEPLOYMENT_REPO=$(echo ${{ github.repository }} | cut -d/ -f2)" >> $GITHUB_ENV
 
       - name: Start Vagrant boxe(s)
         id: vagrant_start
         run: |
-          # Prepare an env. variable required for the Vagrantfile
-          export DEPLOYMENT_REPO="$(echo ${{ github.repository }} | cut -d/ -f2)"
-          echo "DEPLOYMENT_REPO=${DEPLOYMENT_REPO}" >> $GITHUB_ENV
           # Start the Vagrant guest(s)
           vagrant up --provider=libvirt --no-tty
           # Save the SSH config for later
