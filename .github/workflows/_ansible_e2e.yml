@@ -24,6 +24,8 @@ on:
         required: true
         type: string
       deployment_target:
+        # The target should match a single host from the Ansible inventory
+        # Considering a dedicated host could make the testing more flexible
         description: 'Inventory host or group to limit the deployment'
         required: true
         type: string
@@ -37,13 +39,6 @@ jobs:
     name: Ansible end-to-end testing
     runs-on: ${{ inputs.gh_runner_version }}
     timeout-minutes: 20
-    env:
-      # Those variables will (also) be consumed in the Vagrantfile
-      DEPLOYMENT_SSH_KEY: ${{ secrets.deployment_ssh_key }}
-      DEPLOYMENT_USER:  ${{ inputs.deployment_user }}
-      DEPLOYMENT_TARGET: ${{ inputs.deployment_target }}
-      # The target above should match a single host from the Ansible inventory
-      # It could be any host, but better be something dedicated for testing
     steps:
       - name: Checkout
         id: checkout
@@ -91,8 +86,15 @@ jobs:
           vagrant --version
           vagrant plugin list
           hostnamectl
-          # Prepare env. variable required in the Vagrantfile
-          echo "DEPLOYMENT_REPO=$(echo ${{ github.repository }} | cut -d/ -f2)" >> $GITHUB_ENV
+          # Prepare env. variables required in the Vagrantfile
+          cat <<EOF | tee /dev/stderr >> $GITHUB_ENV
+          DEPLOYMENT_REPO=$(echo ${{ github.repository }} | cut -d/ -f2)
+          DEPLOYMENT_USER=${{ inputs.deployment_user }}
+          DEPLOYMENT_SSH_KEY<<END_OF_KEY
+          ${{ secrets.deployment_ssh_key }}
+          END_OF_KEY
+          DEPLOYMENT_TARGET=${{ inputs.deployment_target }}
+          EOF
 
       - name: Start Vagrant boxe(s)
         id: vagrant_start
