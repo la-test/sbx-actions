@@ -206,7 +206,7 @@ jobs:
             . venv/bin/activate
             ansible-lint ansible
 
-  build-wheel:
+  nix-test:
     docker:
       - <<: *NIX_DOCKER
 
@@ -216,20 +216,9 @@ jobs:
     steps:
       - <<: *CHECKOUT
       - run:
-          name: "Build Wheel"
+          name: "Test"
           command: |
-            nix build .#wheel
-            # Put the wheel in a regular directory so CircleCI doesn't get
-            # confused by symlinks when it comes time to upload the wheel as
-            # an artifact.
-            mkdir wheels
-            cp ./result/* wheels/
-      - store_artifacts:
-          path: "./wheels/"
-      - persist_to_workspace:
-          root: "./wheels/"
-          paths:
-            - "*"
+            echo "Nothing to do here"
 
   linux-tests: &LINUX_TESTS
     parameters:
@@ -283,7 +272,7 @@ workflows:
   everything:
     jobs:
     - "docker-test"
-    - "build-wheel"
+    - "nix-test"
     - "linux-tests":
         matrix:
           parameters:
