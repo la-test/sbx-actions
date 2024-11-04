@@ -21,7 +21,6 @@ aliases:
         ssh -o StrictHostKeyChecking=no -T "$USERNAME@github.com" || true
         git clone "https://github.com/${USERNAME}/${REPONAME}.git" .
         git checkout -B "${CIRCLE_BRANCH}" "${CIRCLE_SHA1}"
-        #export GIT_TERMINAL_PROMPT=0
         #TERM=ansi git log -n 1 --pretty=oneline
 
   - &CHECKOUT_WINDOWS
