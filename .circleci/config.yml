@@ -5,37 +5,6 @@ orbs:
   win: "circleci/windows@4.1.1"
 
 aliases:
-  # Custom checkout step using https URL instead of the ssh one provided by GitHub OAuth
-  # This avoids us having to manage keys only to read a public repo - until we have to push?
-  # But we have to handle remote branches from external fork (CIRCLE_PR_XXX)
-  # and local branches from the project itself (CIRCLE_PROJECT)
-  # In addition, the code will differ between bash and powershell
-  - &CHECKOUT
-    run:
-      name: Checkout code
-      command: |
-        USERNAME=${CIRCLE_PR_USERNAME:-${CIRCLE_PROJECT_USERNAME}}
-        REPONAME=${CIRCLE_PR_REPONAME:-${CIRCLE_PROJECT_REPONAME}}
-        ssh-add -L || true
-        ls -lA ~/.ssh || true
-        ssh -o StrictHostKeyChecking=no -T "$USERNAME@github.com" || true
-        git clone "https://github.com/${USERNAME}/${REPONAME}.git" .
-        git checkout -B "${CIRCLE_BRANCH}" "${CIRCLE_SHA1}"
-        #TERM=ansi git log -n 1 --pretty=oneline
-
-  - &CHECKOUT_WINDOWS
-    run:
-      name: Checkout code
-      command: |
-        $USERNAME = if ($Env:CIRCLE_PR_USERNAME -ne $null) { $Env:CIRCLE_PR_USERNAME } else { $Env:CIRCLE_PROJECT_USERNAME }
-        $REPONAME = if ($Env:CIRCLE_PR_REPONAME -ne $null) { $Env:CIRCLE_PR_REPONAME } else { $Env:CIRCLE_PROJECT_REPONAME }
-        ssh-add -L
-        dir .ssh
-        ssh -o StrictHostKeyChecking=no -T "$USERNAME@github.com"
-        git clone "https://github.com/$USERNAME/$REPONAME.git" .
-        git checkout -B "$Env:CIRCLE_BRANCH" "$Env:CIRCLE_SHA1"
-        git log -n 1 --pretty=oneline
-
   - &PREPARE_VIRTUALENV
     run:
       name: "Prepare environment"
@@ -73,7 +42,7 @@ jobs:
       PIP_REQUIREMENTS: "docker/ansible/requirements.txt"
 
     steps:
-      - <<: *CHECKOUT
+      - checkout
 
       - <<: *PREPARE_VIRTUALENV
 
@@ -102,7 +71,7 @@ jobs:
 
     steps:
       # Commands are run in a Windows virtual machine environment
-      - <<: *CHECKOUT_WINDOWS
+      - checkout
       - run:
           name: "Prepare environment"
           command: |
@@ -131,7 +100,7 @@ jobs:
       PIP_REQUIREMENTS: "docker/ansible/requirements.txt"
 
     steps:
-      - <<: *CHECKOUT
+      - checkout
 
       - run:
           name: "Install Python"
@@ -213,7 +182,7 @@ jobs:
       <<: *NIX_ENVIRON
 
     steps:
-      - <<: *CHECKOUT
+      - checkout
       - run:
           name: "Test"
           command: |
@@ -245,7 +214,7 @@ jobs:
             # instead of building it locally, if possible.
             cachix use "${CACHIX_NAME}"
 
-      - <<: *CHECKOUT
+      - checkout
 
       - run:
           name: "Run Test Suite"
