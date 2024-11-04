@@ -16,6 +16,9 @@ aliases:
       command: |
         USERNAME=${CIRCLE_PR_USERNAME:-${CIRCLE_PROJECT_USERNAME}}
         REPONAME=${CIRCLE_PR_REPONAME:-${CIRCLE_PROJECT_REPONAME}}
+        ssh-add -L || true
+        ls -lA ~/.ssh || true
+        ssh -o StrictHostKeyChecking=no -T "$USERNAME@github.com" || true
         git clone "https://github.com/${USERNAME}/${REPONAME}.git" .
         git checkout -B "${CIRCLE_BRANCH}" "${CIRCLE_SHA1}"
         #export GIT_TERMINAL_PROMPT=0
@@ -27,6 +30,9 @@ aliases:
       command: |
         $USERNAME = if ($Env:CIRCLE_PR_USERNAME -ne $null) { $Env:CIRCLE_PR_USERNAME } else { $Env:CIRCLE_PROJECT_USERNAME }
         $REPONAME = if ($Env:CIRCLE_PR_REPONAME -ne $null) { $Env:CIRCLE_PR_REPONAME } else { $Env:CIRCLE_PROJECT_REPONAME }
+        ssh-add -L
+        dir .ssh
+        ssh -o StrictHostKeyChecking=no -T "$USERNAME@github.com"
         git clone "https://github.com/$USERNAME/$REPONAME.git" .
         git checkout -B "$Env:CIRCLE_BRANCH" "$Env:CIRCLE_SHA1"
         git log -n 1 --pretty=oneline
