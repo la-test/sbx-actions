@@ -44,6 +44,10 @@ jobs:
 
     steps:
       - checkout
+      - run:
+          name: "Check context"
+          command: |
+            echo "SBX_VAR = $SBX_VAR"
 
       - <<: *PREPARE_VIRTUALENV
 
@@ -240,7 +244,10 @@ workflows:
 
   everything:
     jobs:
-    - "docker-test"
+    - "docker-test":
+        context:
+          - sbx-context
+
     - "nix-test"
     - "linux-tests":
         matrix:
