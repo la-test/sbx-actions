@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  flake:
+  ansible:
     name: Ansible
     runs-on: ubuntu-24.04
     permissions:
@@ -24,7 +24,7 @@ jobs:
           docker version
           docker compose version
 
-      - name: Cache docker images
+      - name: Cache image
         uses: AndreKurait/docker-cache@0.6.0
         with:
           key: |
@@ -33,14 +33,14 @@ jobs:
               'docker/ansible*/*'
             ) }}
 
-      - name: Fix group membership
+      - name: Fix membership
         id: fix_group
         run: |
           # Add the existing `runner` group to avoid the `docker` one
           sudo adduser runner runner
           echo "_GID=$(grep -E "^runner:" /etc/group | cut -d: -f3)" >> $GITHUB_ENV
 
-      - name: Build Ansible Controller image
+      - name: Build image
         id: build_controller
         run: |
           docker images "*ansible*"
@@ -52,17 +52,24 @@ jobs:
           ansible-controller && \
           docker images "*ansible*"
 
-      - name: Check Ansible playbooks on ${{ inputs.target }} environment
-        id: check_target
+      - name: Update requirements
+        id: update_requirements
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.mode != 'fast' }}
         run: |
           docker compose run --rm \
           ansible-controller bash << EOC
-            python3 -m pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 pip install -U
-            python3 -m pip freeze > ../docker/ansible/requirements.txt
+            # Update the core packages all together
+            pip install -U ansible ansible-compat ansible-core ansible-lint
+            # Update the rest of the dependencies one by one
+            python3 -m pip freeze --local \
+            | grep -v '^\-e' \
+            | grep -v '^ansible' \
+            | cut -d = -f 1  \
+            | xargs -n1 pip install -U
+            python3 -m pip freeze --local > ../docker/ansible/requirements.txt
           EOC
 
-      - name: Rebuild Ansible Controller image
+      - name: Rebuild image
         id: rebuild_controller
         run: |
           docker images "*ansible*"
@@ -78,8 +85,8 @@ jobs:
         id: pull-request
         uses: peter-evans/create-pull-request@v7
         with:
-          commit-message: "Ansible update"
-          branch: "ansible-update"
-          delete-branch: true
           title: "Ansible update"
-
+          commit-message: "Ansible update"
+          body: |
+            - Update of Ansible and its dependencies
+          branch: "ansible-update"
