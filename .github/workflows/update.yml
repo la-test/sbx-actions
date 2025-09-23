@@ -1,4 +1,4 @@
-name: Updates
+name: Update
 on:
   schedule:
     - cron: "0 0 * * *"
@@ -93,8 +93,9 @@ jobs:
         id: create_pr
         uses: peter-evans/create-pull-request@v7
         with:
-          title: "Update Ansible and its dependencies"
-          commit-message: "Update Ansible and its dependencies"
+          add-path: docker/ansible/requirements.txt
           base: "main"
-          branch: "auto-update/ansible"
+          branch: "update/ansible"
+          commit-message: "Update Ansible and its dependencies"
           delete-branch: true
+          title: "Update Ansible and its dependencies"
