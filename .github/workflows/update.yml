@@ -59,7 +59,7 @@ jobs:
         run: |
           docker compose run --rm \
           ansible-controller bash << EOC
-            # Update the core packages all together
+            # Update the main packages all together
             pip install -U ansible ansible-compat ansible-core ansible-lint
             # Update the rest of the dependencies one by one
             python3 -m pip freeze --local \
@@ -67,26 +67,11 @@ jobs:
             | grep -v '^ansible' \
             | cut -d = -f 1  \
             | xargs -n1 pip install -U
-            python3 -m pip freeze --local > ../docker/ansible/requirements.txt
-          EOC
-
-      - name: Rebuild image
-        id: rebuild_controller
-        run: |
-          docker compose --progress=plain build \
-          --build-arg uid=$(id -u) \
-          --build-arg gid=${_GID} \
-          ansible-controller && \
-          docker images "*ansible*"
-
-      - name: Verify Ansible
-        id: verify_ansible
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.mode != 'fast' }}
-        run: |
-          docker compose run --rm \
-          ansible-controller bash << EOC
+            # Verify the main programs
             ansible-playbook --version
             ansible-lint --version
+            # Update the new requirements
+            python3 -m pip freeze --local > ../docker/ansible/requirements.txt
           EOC
 
       - name: Create pull request
