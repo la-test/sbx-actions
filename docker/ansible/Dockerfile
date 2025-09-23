@@ -3,22 +3,35 @@
 ##############################
 
 # Pull official base image from DockerHub
-FROM debian:bookworm-20240812@sha256:aadf411dc9ed5199bc7dab48b3e6ce18f8bbee4f170127f5ff1b75cd8035eb36
+FROM debian:12.12-slim@sha256:df52e55e3361a81ac1bead266f3373ee55d29aa50cf0975d440c2be3483d8ed3
 
-# Pass some wellknown variables
-ENV LANG=C.UTF-8
+# Avoid interactive frontend
 ENV DEBIAN_FRONTEND=noninteractive
+# Software like Ansible requires the locale encoding to be UTF-8
+ENV LANG=C.UTF-8
+# Avoid recommended and suggested packages
+RUN echo 'APT::Install-Recommends "0";' > /etc/apt/apt.conf.d/docker-no-recommends && \
+    echo 'APT::Install-Suggests "0";'  > /etc/apt/apt.conf.d/docker-no-suggests
 
 ##################################
 # Application level requirements #
 ##################################
 
 # Install required packages to install Ansible
-RUN INSTALL_PKGS="python3-pip python3-venv" && \
+RUN INSTALL_PKGS="curl gnupg nano python3-pip python3-venv ssh" && \
     apt-get -q clean && \
     apt-get -q update && \
     apt-get install -y $INSTALL_PKGS && \
     apt-get -q clean
+
+# Install SOPS runtime
+ENV SOPS_VERSION=3.10.2
+ENV SOPS_CHECKSUM=79b0f844237bd4b0446e4dc884dbc1765fc7dedc3968f743d5949c6f2e701739
+ENV SOPS_BIN=/usr/local/bin/sops
+RUN curl --location --no-progress-meter --output "${SOPS_BIN}" \
+    https://github.com/getsops/sops/releases/download/v"${SOPS_VERSION}"/sops-"v${SOPS_VERSION}".linux.amd64 \
+    && chmod +x "${SOPS_BIN}" \
+    && test "$(sha256sum "${SOPS_BIN}" | cut -d' ' -f1)" = "${SOPS_CHECKSUM}"
 
 ###########################
 # User level requirements #
@@ -73,22 +86,12 @@ RUN pip install --no-cache --upgrade -r requirements.txt
 # Install additional Ansible requirements
 COPY requirements.yml /home/${user}/requirements.yml
 RUN ansible-galaxy install -r requirements.yml
+RUN umask 077 \
+    && mkdir -p ${HOME}/.gnupg \
+    && echo "use-agent" >> ${HOME}/.gnupg/gpg.conf
 
-# Some extra steps to allow local testing
-USER root
+# Prepare entrypoint
+COPY --chmod=0755 entrypoint.sh /usr/local/bin/entrypoint.sh
 
-# Install some required packages for testing
-RUN INSTALL_PKGS="sudo python3-apt openssh-server" && \
-    apt-get -q clean && \
-    apt-get -q update && \
-    apt-get install -y $INSTALL_PKGS && \
-    apt-get -q clean
-
-# Allow user to become while testing playbook locally
-RUN echo -n "Defaults:${user} " > /etc/sudoers.d/ansible && \
-    echo '!requiretty' >> /etc/sudoers.d/ansible && \
-    echo "${user} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/ansible
-
-# Switch back to non-root user
-USER ${user}
-WORKDIR /home/${user}
+# Call our entrypoint to automaticaly import all public keys
+ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]

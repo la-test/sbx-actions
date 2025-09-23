@@ -1,6 +1,8 @@
+# Docker compose file to support dev+ops activities
 version: '3'
 services:
-  # Ansible controller to test and run playbooks
+  # Ansible controller to test and run the playbooks
+  # developed in this repository (under ./ansible)
   ansible-controller:
     build:
       context: docker/ansible
@@ -13,21 +15,27 @@ services:
     volumes:
       - .:/var/lib/appdata
       - ~/.ssh:/home/appuser/.ssh
-      - "${SSH_AUTH_SOCK:-./ssh.socket}:/ssh.socket"
-    environment:
-      - SSH_AUTH_SOCK="/ssh.socket"
+      - ${SSH_AUTH_SOCK:-/dev/null}:/S.ssh-agent
     working_dir: /var/lib/appdata/ansible
+    environment:
+      # Tuning Ansible with SSH and GPG
+      - ANSIBLE_FORCE_COLOR=true
+      - ANSIBLE_SSH_COMMON_ARGS='-Fssh/config'
+      - SSH_AUTH_SOCK=/S.ssh-agent
     stdin_open: true
     tty: true
     hostname: ansible-controller.local
     container_name: ansible-controller.local
     command: bash
     network_mode: "bridge"
+    # Prevents container to hang the host
+    # Requires `... --compatibility run ...`
     deploy:
       resources:
         limits:
           cpus: '1.5'
           memory: 256M
+
   nodejs:
     #image: node:current-alpine
     build: 
