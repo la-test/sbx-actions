@@ -1,0 +1,85 @@
+name: Updates
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  flake:
+    name: Ansible
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+
+      - name: Verify Docker
+        id: verify_docker
+        run: |
+          docker run --rm hello-world:latest > /dev/null
+          docker rmi hello-world:latest > /dev/null
+          docker version
+          docker compose version
+
+      - name: Cache docker images
+        uses: AndreKurait/docker-cache@0.6.0
+        with:
+          key: |
+            docker-${{ runner.os }}-${{ hashFiles(
+              'docker-compose*.yml',
+              'docker/ansible*/*'
+            ) }}
+
+      - name: Fix group membership
+        id: fix_group
+        run: |
+          # Add the existing `runner` group to avoid the `docker` one
+          sudo adduser runner runner
+          echo "_GID=$(grep -E "^runner:" /etc/group | cut -d: -f3)" >> $GITHUB_ENV
+
+      - name: Build Ansible Controller image
+        id: build_controller
+        run: |
+          docker images "*ansible*"
+          repository=${{ github.repository }}
+          docker images --quiet ${repository##*/}*ansible-controller:latest | grep -v "^$" || \
+          docker compose --progress=plain build \
+          --build-arg uid=$(id -u) \
+          --build-arg gid=${_GID} \
+          ansible-controller && \
+          docker images "*ansible*"
+
+      - name: Check Ansible playbooks on ${{ inputs.target }} environment
+        id: check_target
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.mode != 'fast' }}
+        run: |
+          docker compose run --rm \
+          ansible-controller bash << EOC
+            python3 -m pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 pip install -U
+            python3 -m pip freeze > ../docker/ansible/requirements.txt
+          EOC
+
+      - name: Rebuild Ansible Controller image
+        id: rebuild_controller
+        run: |
+          docker images "*ansible*"
+          repository=${{ github.repository }}
+          docker images --quiet ${repository##*/}*ansible-controller:latest | grep -v "^$" || \
+          docker compose --progress=plain build \
+          --build-arg uid=$(id -u) \
+          --build-arg gid=${_GID} \
+          ansible-controller && \
+          docker images "*ansible*"
+
+      - name: Create Pull Request
+        id: pull-request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "Ansible update"
+          branch: "ansible-update"
+          delete-branch: true
+          title: "Ansible update"
+
