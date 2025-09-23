@@ -1,1 +1,18 @@
-docker/nodejs/package.json
+{
+  "name": "sbx-actions",
+  "version": "0.0.0",
+  "description": "Sandbox NodeJS project based on npm",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "node src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://code.in.digital-me.nl/git/DEV/njsDummy.git"
+  },
+  "author": "webmaster@tergology.com",
+  "license": "GPL-3.0-or-later",
+  "dependencies": {
+    "webpack": "^5.101.3"
+  }
+}
