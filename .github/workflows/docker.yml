@@ -9,63 +9,74 @@ on:
       - 'docker/**'
       - 'src/**'
   pull_request:
-    branches:    
-      - main
     paths:
       - '.github/workflows/docker.yml'
       - 'docker/**'
       - 'src/**'
   workflow_dispatch:
+
+env:
+  # Update the docker/tofu/Dockerfile according to this version if needed
+  TF_VERSION: "1.9.1"
 jobs:
-  docker_test:
-    name: Run some doker tests
+  main:
+    name: Main
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+
     steps:
       - name: Checkout
+        id: checkout
         uses: actions/checkout@v3    
+
+      - name: Verify Docker
+        id: verify_docker
+        run: |
+          docker run --rm hello-world:latest > /dev/null
+          docker rmi hello-world:latest > /dev/null
+          docker version
+          docker compose version
 
       - name: Cache docker images
         uses: AndreKurait/docker-cache@0.6.0
         with:
           key: |
             docker-${{ runner.os }}-${{ hashFiles(
-              '**/docker-compose*.yml',
-              '**/*Dockerfile*',
-              '**/entrypoint.sh',
-              '**/requirements.*',
-              '**/package-lock.json'
+              'docker-compose*.yml',
+              'docker/**'
             ) }}
 
-      - name: Install docker support
-        id: install_docker
+      - name: Fix goup membership
+        id: fix_group
         run: |
-          sudo apt install --quiet docker-compose
+          # Add the existing `runner` group to avoid the `docker` one
+          sudo adduser runner runner
+          echo "_GID=$(grep -E "^runner:" /etc/group | cut -d: -f3)" >> $GITHUB_ENV
 
-      - name: Check docker setup
+      - name: Build images
+        id: build_images
         run: |
-          docker run hello-world
-          echo "Current user:" && id -a
-          echo "Sub user IDs:" && sudo cat /etc/subuid
-          echo "Sub group IDs:" && sudo cat /etc/subgid
-          sudo test -f /etc/docker/daemon.json && { \
-          echo "Docker daemon JSON config:"
-          sudo cat /etc/docker/daemon.json; } || \
-          echo "Docker daemon JSON config not found"
-          echo "Docker group:" && sudo grep docker /etc/group
+          docker compose build --progress=plain \
+          --build-arg uid=$(id -u) \
+          --build-arg gid=${_GID} \
+          --build-arg terraform_version=${TF_VERSION}
 
-      - name: Build Ansible Controller image
-        id: build_controller
+      - name: Verify Ansible version
+        id: verify_ansible
         run: |
-          repository=${{ github.repository }}
-          docker images --quiet ${repository##*/}_ansible-controller:latest | grep -v "^$" || \
-          docker-compose build --progress=plain \
-          --build-arg uid=$(id -u) --build-arg user=$(id -nu) \
-          --build-arg gid=$(id -g) --build-arg group=$(id -ng) \
-          ansible-controller
+          AC_VERSION="$(grep -Po "(?<=ansible-core==).+" docker/ansible/requirements.txt)"
+          docker compose run --entrypoint ansible ansible-controller --version \
+          | tee /dev/stderr \
+          | grep -q "core ${AC_VERSION}"
 
-      - name: List docker images
+      - name: Verify Tofu version
+        id: verify_tofu
         run: |
-          docker images -a
+          docker compose run --entrypoint /usr/local/bin/tofu tofu-shell -version \
+          | tee /dev/stderr \
+          | grep -q "OpenTofu v${TF_VERSION}"
 
       - name: Scan docker images
         id: scan_images
