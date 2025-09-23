@@ -30,13 +30,6 @@ updates:
       time: "12:30"
     reviewers:
       - "btlogy"
-  - package-ecosystem: "pip"
-    directory: "/docker/ansible"
-    schedule:
-      interval: "daily"
-      time: "12:30"
-    reviewers:
-      - "btlogy"
   - package-ecosystem: "docker"
     directory: "/.github/actions/magic-wormhole-secret"
     schedule:
