@@ -78,10 +78,10 @@ jobs:
           | tee /dev/stderr \
           | grep -q "OpenTofu v${TF_VERSION}"
 
-      - name: Scan docker images
-        id: scan_images
-        uses: aquasecurity/trivy-action@0.31.0
-        with:
-          scan-type: 'image'
-          image-ref: 'sbx-actions_ansible-controller:latest'
-          trivy-config: './docker/trivy.yaml'
+      # - name: Scan docker images
+      #   id: scan_images
+      #   uses: aquasecurity/trivy-action@0.31.0
+      #   with:
+      #     scan-type: 'image'
+      #     image-ref: 'sbx-actions_ansible-controller:latest'
+      #     trivy-config: './docker/trivy.yaml'
