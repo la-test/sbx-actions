@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  flake:
+  ansible:
     name: Ansible
     runs-on: ubuntu-24.04
     permissions:
@@ -24,7 +24,8 @@ jobs:
           docker version
           docker compose version
 
-      - name: Cache docker images
+      - name: Cache image
+        id: cache_image
         uses: AndreKurait/docker-cache@0.6.0
         with:
           key: |
@@ -33,14 +34,14 @@ jobs:
               'docker/ansible*/*'
             ) }}
 
-      - name: Fix group membership
-        id: fix_group
+      - name: Fix membership
+        id: fix_membership
         run: |
           # Add the existing `runner` group to avoid the `docker` one
           sudo adduser runner runner
           echo "_GID=$(grep -E "^runner:" /etc/group | cut -d: -f3)" >> $GITHUB_ENV
 
-      - name: Build Ansible Controller image
+      - name: Build image
         id: build_controller
         run: |
           docker images "*ansible*"
@@ -52,34 +53,48 @@ jobs:
           ansible-controller && \
           docker images "*ansible*"
 
-      - name: Check Ansible playbooks on ${{ inputs.target }} environment
-        id: check_target
+      - name: Update requirements
+        id: update_requirements
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.mode != 'fast' }}
         run: |
           docker compose run --rm \
           ansible-controller bash << EOC
-            python3 -m pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 pip install -U
-            python3 -m pip freeze > ../docker/ansible/requirements.txt
+            # Update the core packages all together
+            pip install -U ansible ansible-compat ansible-core ansible-lint
+            # Update the rest of the dependencies one by one
+            python3 -m pip freeze --local \
+            | grep -v '^\-e' \
+            | grep -v '^ansible' \
+            | cut -d = -f 1  \
+            | xargs -n1 pip install -U
+            python3 -m pip freeze --local > ../docker/ansible/requirements.txt
           EOC
 
-      - name: Rebuild Ansible Controller image
+      - name: Rebuild image
         id: rebuild_controller
         run: |
-          docker images "*ansible*"
-          repository=${{ github.repository }}
-          docker images --quiet ${repository##*/}*ansible-controller:latest | grep -v "^$" || \
           docker compose --progress=plain build \
           --build-arg uid=$(id -u) \
           --build-arg gid=${_GID} \
           ansible-controller && \
           docker images "*ansible*"
 
-      - name: Create Pull Request
-        id: pull-request
+      - name: Verify Ansible
+        id: verify_ansible
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.mode != 'fast' }}
+        run: |
+          docker compose run --rm \
+          ansible-controller bash << EOC
+            ansible-playbook --version
+            ansible-lint --version
+          EOC
+
+      - name: Create pull request
+        id: create_pr
         uses: peter-evans/create-pull-request@v7
         with:
-          commit-message: "Ansible update"
-          branch: "ansible-update"
+          title: "Update Ansible and its dependencies"
+          commit-message: "Update Ansible and its dependencies"
+          base: "main"
+          branch: "auto-update/ansible"
           delete-branch: true
-          title: "Ansible update"
-
