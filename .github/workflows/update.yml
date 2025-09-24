@@ -46,20 +46,17 @@ jobs:
         id: update_requirements
         run: |
           docker compose run --rm \
-          ansible-controller bash << EOC
-            # Update the main packages all together
-            pip install -U ansible ansible-compat ansible-core ansible-lint
-            # Update the rest of the dependencies one by one
-            python3 -m pip freeze --local \
-            | grep -v '^\-e' \
-            | grep -v '^ansible' \
-            | cut -d = -f 1  \
-            | xargs -n1 pip install -U
-            # Verify the main programs
+          ansible-controller bash -e << EOC
+            # Upgrade the main packages
+            pip install --upgrade --upgrade-strategy eager ansible ansible-lint
+            # Save the new requirements
+            python3 -m pip freeze --local > ../docker/ansible/requirements.txt
+            # Reinstall the new requirements to be safe
+            pip install --force-reinstall -r ../docker/ansible/requirements.txt
+            # Some sanity checks
+            python3 -m pip check
             ansible-playbook --version
             ansible-lint --version
-            # Update the new requirements
-            python3 -m pip freeze --local > ../docker/ansible/requirements.txt
           EOC
 
       - name: Create pull request
