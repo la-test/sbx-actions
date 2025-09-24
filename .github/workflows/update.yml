@@ -8,9 +8,6 @@ jobs:
   ansible:
     name: Ansible
     runs-on: ubuntu-24.04
-    permissions:
-      contents: write
-      pull-requests: write
     steps:
       - name: Checkout
         id: checkout
@@ -84,3 +81,4 @@ jobs:
           commit-message: "Update Ansible and its dependencies"
           delete-branch: true
           title: "Update Ansible and its dependencies"
+          token: ${{ secrets.GH_PAT }}
