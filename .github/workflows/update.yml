@@ -77,7 +77,8 @@ jobs:
         id: create_pr
         uses: peter-evans/create-pull-request@v7
         with:
-          add-path: docker/ansible/requirements.txt
+          add-paths: |
+            docker/ansible/requirements.txt
           base: "main"
           branch: "update/ansible"
           commit-message: "Update Ansible and its dependencies"
