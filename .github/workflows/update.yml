@@ -55,7 +55,6 @@ jobs:
 
       - name: Update requirements
         id: update_requirements
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.mode != 'fast' }}
         run: |
           docker compose run --rm \
           ansible-controller bash << EOC
