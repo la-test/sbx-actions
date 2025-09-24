@@ -13,14 +13,6 @@ jobs:
         id: checkout
         uses: actions/checkout@v4
 
-      - name: Verify Docker
-        id: verify_docker
-        run: |
-          docker run --rm hello-world:latest > /dev/null
-          docker rmi hello-world:latest > /dev/null
-          docker version
-          docker compose version
-
       - name: Cache image
         id: cache_image
         uses: AndreKurait/docker-cache@0.6.0
