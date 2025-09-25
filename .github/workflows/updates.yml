@@ -15,7 +15,7 @@ jobs:
 
       - name: Prepare Ansible
         id: prepare_ansible
-        uses: ./.github/actions/setup-docker-image
+        uses: la-test/.github/actions/setup-docker-image@6660d3dbacedb09cca8f8a04294fe4c2658a50bc
         with:
           service-name: ansible-controller
 
