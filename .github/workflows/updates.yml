@@ -17,7 +17,7 @@ jobs:
         id: prepare_ansible
         uses: ./.github/actions/setup-docker-image
         with:
-          service_name: ansible-controller
+          service-name: ansible-controller
 
       - name: Update requirements
         id: update_requirements
