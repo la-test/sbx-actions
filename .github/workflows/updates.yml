@@ -1,7 +1,7 @@
-name: Update
+name: Updates
 on:
   schedule:
-    - cron: "0 4 * * 1"
+    - cron: "27 4 * * 1"
   workflow_dispatch:
 
 jobs:
@@ -13,34 +13,11 @@ jobs:
         id: checkout
         uses: actions/checkout@v4
 
-      - name: Cache image
-        id: cache_image
-        uses: AndreKurait/docker-cache@0.6.0
+      - name: Prepare Ansible
+        id: prepare_ansible
+        uses: ./.github/actions/setup-docker-image
         with:
-          key: |
-            docker-${{ runner.os }}-${{ hashFiles(
-              'docker-compose*.yml',
-              'docker/ansible*/*'
-            ) }}
-
-      - name: Fix membership
-        id: fix_membership
-        run: |
-          # Add the existing `runner` group to avoid the `docker` one
-          sudo adduser runner runner
-          echo "_GID=$(grep -E "^runner:" /etc/group | cut -d: -f3)" >> $GITHUB_ENV
-
-      - name: Build image
-        id: build_controller
-        run: |
-          docker images "*ansible*"
-          repository=${{ github.repository }}
-          docker images --quiet ${repository##*/}*ansible-controller:latest | grep -v "^$" || \
-          docker compose --progress=plain build \
-          --build-arg uid=$(id -u) \
-          --build-arg gid=${_GID} \
-          ansible-controller && \
-          docker images "*ansible*"
+          service-name: ansible-controller
 
       - name: Update requirements
         id: update_requirements
@@ -66,7 +43,7 @@ jobs:
           add-paths: |
             docker/ansible/requirements.txt
           base: "main"
-          branch: "update/ansible"
+          branch: "updates/ansible"
           commit-message: "Update Ansible and its dependencies"
           delete-branch: true
           title: "Update Ansible and its dependencies"

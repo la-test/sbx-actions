@@ -1,0 +1,60 @@
+name: 'Setup Docker Image(s)'
+description: 'Prepare Docker and build one of all images for the services defined in the docker compose file'
+inputs:
+  service-name:
+    description: 'Name of the service from the docker-compose.yml (if not all of them)'
+    required: false
+    default: null
+  cache:
+    description: 'Cache image(s) whether built of pulled'
+    required: false
+    default: true
+  cache-read-only:
+    description: 'Disable saving cache upon cache miss'
+    required: false
+    default: false
+outputs:
+  cache-hit:
+    description:
+    value: ${{ steps.cache.outputs.cache-hit }}
+runs:
+  using: "composite"
+  steps:
+    - name: Cache image(s)
+      id: cache
+      if: inputs.cache
+      uses: AndreKurait/docker-cache@0.6.0
+      with:
+        key: |
+          ${{ format('docker-{0}-{1}-{2}',
+            ( inputs.service-name || 'all'),
+            runner.os,
+            hashFiles(
+              'docker-compose*.yml',
+              format('docker/{0}/**', ( inputs.service-name || '*'))
+            )
+          ) }}
+        read-only: ${{ inputs.cache-read-only }}
+
+    - name: Fix membership
+      id: membership
+      run: |
+        # Add the existing `runner` group to avoid the `docker` one,
+        # so we can consume this non-privilege gid as a build-arg later
+        groups | grep -q runner || sudo adduser runner runner
+        echo "_GID=$(grep -E "^runner:" /etc/group | cut -d: -f3)" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Build image(s)
+      id: build
+      run: |
+        docker images "*${{ inputs.service-name || '' }}"
+        repository=${{ github.repository }}
+        # Build the image only if it was not restored from the cache
+        docker images --quiet ${repository##*/}*${{ inputs.service-name || '' }}:latest | grep -v "^$" || \
+        docker compose --progress=plain build \
+        --build-arg uid=$(id -u) \
+        --build-arg gid=${_GID} \
+        ${{ inputs.service-name || '' }} && \
+        docker images "*${{ inputs.service-name || '' }}"
+      shell: bash
