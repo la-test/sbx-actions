@@ -1,4 +1,4 @@
-name: Update
+name: Updates
 on:
   schedule:
     - cron: "27 4 * * 1"
@@ -43,7 +43,7 @@ jobs:
           add-paths: |
             docker/ansible/requirements.txt
           base: "main"
-          branch: "update/ansible"
+          branch: "updates/ansible"
           commit-message: "Update Ansible and its dependencies"
           delete-branch: true
           title: "Update Ansible and its dependencies"
