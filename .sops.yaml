@@ -1,0 +1,31 @@
+# This files uses YAML anchors which allows reuse of multiple keys
+# without having to repeat yourself.
+# Also see https://github.com/Mic92/dotfiles/blob/master/nixos/.sops.yaml
+# for a more complex example.
+keys:
+  # The following public keys can be found in secrets/.public-keys
+  # They have to be imported and trusted
+  # E.g.: `gpg --import ...` and `gpg --edit-key ...`
+  # First the PGP fingerprints of the admin (hardware token recommanded)
+  - &adm_ben 411eb16d13b422490feba1155a7a09f0c279fcd6
+  - &adm_flo 5244970fbec8aa66658ec4b6d7d4a441431a73f1
+  - &adm_last-resort-a eaf916fd9ccda8288b9c5e3a7cc75588b18b3e9b
+  - &adm_last-resort-c a229968d0fa44960493ea207619b4427113ef6c8
+  # Then the PGP fingerprints derivated of the sshd RSA key of the servers
+  # which can be obtain by running the following command on the server
+  # nix-shell -p ssh-to-pgp --run "ssh-to-pgp -i /etc/ssh/ssh_host_rsa_key -email root@`hostname`"
+  # ...
+  # Finally, the PGP fingerprints from dedicated keys (not uses by sshd)
+  # - &srv_github-actions ...
+creation_rules:
+  # The following files can be created with:
+  # `nix-shell -p sops --run "sops <file>"`
+  # To update after changing the keys:
+  # `nix-shell -p sops --run "sops updatekeys <file>"`
+  - path_regex: secrets/[^/]+\.(yaml|json|env|ini)$
+    key_groups:
+    - pgp:
+      - *adm_ben
+      - *adm_flo
+      - *adm_last-resort-a
+      - *adm_last-resort-c
