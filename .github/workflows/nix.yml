@@ -1,0 +1,44 @@
+name: Nix
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/nix.yml'
+      - '.sops.yaml'
+      - '*.nix'
+      - 'flake.lock'
+      - 'secrets/**'
+  pull_request:
+    paths:
+      - '.github/workflows/nix.yml'
+      - '.sops.yaml'
+      - '*.nix'
+      - 'flake.lock'
+      - 'secrets/**'
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        id: install_nix
+        uses: nixbuild/nix-quick-install-action@v30
+
+      - name: Check Nix Flake
+        id: check_flake
+        run: |
+          nix flake show
+          nix flake check
+
+      - name: Check Nix Shell
+        id: check_shell
+        run: |
+          nix-shell --run "gpg -k"
+
