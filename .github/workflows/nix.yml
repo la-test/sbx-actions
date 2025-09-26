@@ -21,15 +21,14 @@ on:
 jobs:
   check:
     name: Check
-    runs-on: ubuntu-24.04
+    runs-on: nixos
+    env:
+      NIX_CONFIG: extra-experimental-features = nix-command flakes
+      NIX_PATH: nixpkgs=flake:nixpkgs:/nix/var/nix/profiles/system
     steps:
       - name: Checkout
         id: checkout
         uses: actions/checkout@v4
-
-      - name: Install Nix
-        id: install_nix
-        uses: nixbuild/nix-quick-install-action@v30
 
       - name: Check Nix Flake
         id: check_flake
@@ -41,4 +40,3 @@ jobs:
         id: check_shell
         run: |
           nix-shell --run "gpg -k"
-
