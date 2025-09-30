@@ -3,7 +3,7 @@
 ##############################
 
 # Pull official base image from DockerHub
-FROM debian:12.12-slim@sha256:df52e55e3361a81ac1bead266f3373ee55d29aa50cf0975d440c2be3483d8ed3
+FROM debian:12.12-slim@sha256:7e490910eea2861b9664577a96b54ce68ea3e02ce7f51d89cb0103a6f9c386e0
 
 # Avoid interactive frontend
 ENV DEBIAN_FRONTEND=noninteractive
