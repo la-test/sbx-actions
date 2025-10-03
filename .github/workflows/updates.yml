@@ -48,3 +48,17 @@ jobs:
           delete-branch: true
           title: "Update Ansible and its dependencies"
           token: ${{ secrets.GH_PAT_UPDATE }}
+
+  nix:
+    name: Nix
+    runs-on: nixos
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: la-test/.github/actions/checkout-nix-flake@bb79c2dbefe1e5125955cf94a055baff1fc549bc
+
+      - name: Update Nix Flake
+        id: update_nix_flake
+        uses: la-test/.github/actions/update-nix-flake@bb79c2dbefe1e5125955cf94a055baff1fc549bc
+        with:
+          token: ${{ secrets.GH_PAT_UPDATE }}
