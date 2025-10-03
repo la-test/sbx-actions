@@ -42,7 +42,7 @@ jobs:
     steps:
       - name: Checkout
         id: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
 
       - name: Add Vagrant repo
         id: vagrant_repo
@@ -108,7 +108,7 @@ jobs:
 
       - name: Load ssh key in agent
         id: ssh_agent
-        uses: LeastAuthority/ssh-agent-action@v1
+        uses: LeastAuthority/ssh-agent-action@0dd06f345a84b49e021b9e254efe3a1faa95cc98 # v1.0.2
         with:
           private_key: ${{ env.DEPLOYMENT_SSH_KEY }}
           auth_sock_path: ~/S.agent.ssh
