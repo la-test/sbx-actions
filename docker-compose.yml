@@ -76,7 +76,6 @@ services:
           memory: 512M
 
   nodejs:
-    #image: node:current-alpine
     build: 
       context: docker/nodejs
       dockerfile: Dockerfile
@@ -84,15 +83,14 @@ services:
         uid: "${_UID:-1000}"
         gid: "${_GID:-1000}"
     volumes:
-      - .:/var/tmp/nodejs
-    working_dir: /var/tmp/nodejs
+      - .:/var/lib/appdata
+    working_dir: /var/lib/appdata
     stdin_open: true
     tty: true
     hostname: nodejs.local
     container_name: nodejs.local
     command: sh
-    networks:
-      - bridge
+    network_mode: "bridge"
     deploy:
       resources:
         limits:
