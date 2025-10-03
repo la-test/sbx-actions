@@ -15,68 +15,49 @@ on:
       - 'src/**'
   workflow_dispatch:
 
-env:
-  # Update the docker/tofu/Dockerfile according to this version if needed
-  TF_VERSION: "1.9.1"
 jobs:
-  main:
-    name: Main
-    runs-on: ubuntu-latest
+  build:
+    name: Build
+    runs-on: ubuntu-24.04
     permissions:
       pull-requests: write
       contents: read
-
+    strategy:
+      fail-fast: false
+      matrix:
+        # TODO: Dynamic matrix with `docker-compose config --services` output
+        # But this would require something like a dedicated version.sh entrypoint?
+        include:
+          - service-name: ansible-controller
+            version-cmd: "ansible --version"
+            version-cmd-in: "grep -Po '(?<=ansible-core==)[.\\d]+' docker/ansible/requirements.txt"
+            version-cmd-out: "grep -Po '(?<=core )[.\\d]+'"
+          - service-name: tofu-shell
+            version-cmd: "tofu version"
+            version-cmd-in: "grep -Po '(?<=opentofu:)[.\\d]+' docker/tofu/Dockerfile"
+            version-cmd-out: "grep -Po '(?<=OpenTofu v)[.\\d]+'"
+          - service-name: nodejs
+            version-cmd: "node --version"
+            version-cmd-in: "grep -Po '(?<=node:)[.\\d]+' docker/nodejs/Dockerfile"
+            version-cmd-out: "grep -Po '(?<=v)[.\\d]+'"
     steps:
       - name: Checkout
         id: checkout
-        uses: actions/checkout@v3    
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
 
-      - name: Verify Docker
-        id: verify_docker
-        run: |
-          docker run --rm hello-world:latest > /dev/null
-          docker rmi hello-world:latest > /dev/null
-          docker version
-          docker compose version
-
-      - name: Cache docker images
-        uses: AndreKurait/docker-cache@0.6.0
+      - name: Prepare service
+        id: prepare_service
+        uses: la-test/.github/actions/setup-docker-image@ce2e51c8ec395117c44b8ac98a5b54d9a9c6a16e
         with:
-          key: |
-            docker-${{ runner.os }}-${{ hashFiles(
-              'docker-compose*.yml',
-              'docker/**'
-            ) }}
+          service-name: ${{ matrix.service-name }}
 
-      - name: Fix goup membership
-        id: fix_group
+      - name: Verify version
+        id: verify_version
         run: |
-          # Add the existing `runner` group to avoid the `docker` one
-          sudo adduser runner runner
-          echo "_GID=$(grep -E "^runner:" /etc/group | cut -d: -f3)" >> $GITHUB_ENV
-
-      - name: Build images
-        id: build_images
-        run: |
-          docker compose build --progress=plain \
-          --build-arg uid=$(id -u) \
-          --build-arg gid=${_GID} \
-          --build-arg terraform_version=${TF_VERSION}
-
-      - name: Verify Ansible version
-        id: verify_ansible
-        run: |
-          AC_VERSION="$(grep -Po "(?<=ansible-core==).+" docker/ansible/requirements.txt)"
-          docker compose run --entrypoint ansible ansible-controller --version \
+          echo "${{ matrix.version-cmd }}" | docker compose run --rm -T "${{ matrix.service-name }}" \
           | tee /dev/stderr \
-          | grep -q "core ${AC_VERSION}"
-
-      - name: Verify Tofu version
-        id: verify_tofu
-        run: |
-          docker compose run --entrypoint /usr/local/bin/tofu tofu-shell -version \
-          | tee /dev/stderr \
-          | grep -q "OpenTofu v${TF_VERSION}"
+          | ${{ matrix.version-cmd-out }} \
+          | grep -q "$(${{ matrix.version-cmd-in }})"
 
       # - name: Scan docker images
       #   id: scan_images
