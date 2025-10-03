@@ -22,13 +22,10 @@ jobs:
   check:
     name: Check
     runs-on: nixos
-    env:
-      NIX_CONFIG: extra-experimental-features = nix-command flakes
-      NIX_PATH: nixpkgs=flake:nixpkgs:/nix/var/nix/profiles/system
     steps:
       - name: Checkout
         id: checkout
-        uses: la-test/.github/actions/checkout-nix-flake@ce2e51c8ec395117c44b8ac98a5b54d9a9c6a16e
+        uses: la-test/.github/actions/checkout-nix-flake@bb79c2dbefe1e5125955cf94a055baff1fc549bc
 
       - name: Check Nix Flake
         id: check_flake

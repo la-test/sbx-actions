@@ -24,9 +24,11 @@
       pkgs = import nixpkgs { inherit system; };
     in {
       devShells."${system}".default = pkgs.mkShell {
-        packages = [
-          pkgs.gnupg
-          pkgs.sops
+        packages = with pkgs; [
+          docker-compose
+          gnupg
+          opentofu
+          sops
         ];
         shellHook = ''
           # Print the version of some of the software used by this shell
