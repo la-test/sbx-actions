@@ -1,2 +1,6 @@
+/.github/actions/magic-wormhole-secret/Dockerfile @btlogy
+/.github/workflows/*.yml @btlogy
+/ansible/files/docker/stack/*/Dockerfile
+/docker/*/Dockerfile @btlogy
 /docker/ansible/requirements.txt @btlogy
-/ @btlogy
+/package-lock.json @btlogy
