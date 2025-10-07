@@ -15,7 +15,7 @@ jobs:
 
       - name: Prepare Ansible
         id: prepare_ansible
-        uses: la-test/.github/actions/setup-docker-image@ce2e51c8ec395117c44b8ac98a5b54d9a9c6a16e
+        uses: LeastAuthority/setup-docker-image@137f365304672bf5ef01a6f3fbb34c5fd848ca15
         with:
           service-name: ansible-controller
 
@@ -55,10 +55,10 @@ jobs:
     steps:
       - name: Checkout
         id: checkout
-        uses: la-test/.github/actions/checkout-nix-flake@bb79c2dbefe1e5125955cf94a055baff1fc549bc
+        uses: LeastAuthority/checkout-nix-flake@7c1a1484bb5e76ec667e7b07ea198c2afaf041fd
 
       - name: Update Nix Flake
         id: update_nix_flake
-        uses: la-test/.github/actions/update-nix-flake@bb79c2dbefe1e5125955cf94a055baff1fc549bc
+        uses: LeastAuthority/update-nix-flake@d921dd7a49e8a269d6007a812d58f2c31056ecc8
         with:
           token: ${{ secrets.GH_PAT_UPDATE }}

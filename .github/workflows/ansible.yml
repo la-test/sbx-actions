@@ -24,41 +24,11 @@ jobs:
         id: checkout
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
 
-      - name: Verify Docker
-        id: verify_docker
-        run: |
-          docker run --rm hello-world:latest > /dev/null
-          docker rmi hello-world:latest > /dev/null
-          docker version
-          docker compose version
-
-      - name: Cache docker images
-        uses: AndreKurait/docker-cache@0.6.0
+      - name: Prepare Ansible
+        id: prepare_service
+        uses: LeastAuthority/setup-docker-image@137f365304672bf5ef01a6f3fbb34c5fd848ca15
         with:
-          key: |
-            docker-${{ runner.os }}-${{ hashFiles(
-              'docker-compose*.yml',
-              'docker/ansible*/*'
-            ) }}
-
-      - name: Fix group membership
-        id: fix_group
-        run: |
-          # Add the existing `runner` group to avoid the `docker` one
-          sudo adduser runner runner
-          echo "_GID=$(grep -E "^runner:" /etc/group | cut -d: -f3)" >> $GITHUB_ENV
-
-      - name: Build Ansible Controller image
-        id: build_controller
-        run: |
-          docker images "*ansible*"
-          repository=${{ github.repository }}
-          docker images --quiet ${repository##*/}*ansible-controller:latest | grep -v "^$" || \
-          docker compose --progress=plain build \
-          --build-arg uid=$(id -u) \
-          --build-arg gid=${_GID} \
-          ansible-controller && \
-          docker images "*ansible*"
+          service-name: ansible-controller
 
       - name: Lint Ansible playbooks
         id: lint
