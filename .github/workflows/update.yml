@@ -84,13 +84,23 @@ jobs:
           ref: stable
           fetch-depth: 0
 
+      - name: Changelog
+        id: changelog
+        run: |
+          git log origin/main...HEAD \
+            --pretty=format:"* %h (%cd): %s" \
+            --date=short \
+            --first-parent \
+            --left-only \
+            --reverse \
+            | sed -r -e 's/Merge pull request (#[0-9]+) from .[^ ]+/\1/g' \
+            | tee ${{ runner.temp }}/pull-request-body.md \
+            >> $GITHUB_STEP_SUMMARY
+
       - name: Merge
         id: merge
         run: |
-          git log origin/stable...origin/main \
-            --pretty=format:"* %cd: %s (%h)" \
-            --first-parent --date=short --right-only \
-            | tee ${{ runner.temp }}/pull-request-body.md >> $GITHUB_STEP_SUMMARY
+          git config user.name "${{ github.actor }}"
           git merge origin/main
 
       - name: Create pull request
@@ -98,10 +108,9 @@ jobs:
         if: ${{ github.event_name != 'pull_request' }}
         uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
         with:
-          base: "stable"
           branch: "update/stable"
-          commit-message: "Merge main into stable to deploy latest changes in production"
+          commit-message: "Merge main into stable"
           delete-branch: false
-          title: "Merge main into stable to deploy latest changes in production"
+          title: "Update stable branch with latest changes"
           token: ${{ secrets.GH_PAT_UPDATE }}
           body-path: "${{ runner.temp }}/pull-request-body.md"
