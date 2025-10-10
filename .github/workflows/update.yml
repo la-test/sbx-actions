@@ -64,7 +64,7 @@ jobs:
     steps:
       - name: Checkout
         id: checkout
-        uses: LeastAuthority/checkout-nix-flake@7c1a1484bb5e76ec667e7b07ea198c2afaf041fd # v1.0.0
+        uses: LeastAuthority/checkout-nix-flake@90a34024508812fd64b012de7c97ff977e32bd46 # v1.0.1
 
       - name: Update Nix Flake
         id: update_nix_flake
