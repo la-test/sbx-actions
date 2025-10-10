@@ -1,11 +1,16 @@
-name: Updates
+name: Update
 on:
   schedule:
     - cron: "27 4 * * 1"
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/update.yml'
   pull_request:
     paths:
-      - '.github/workflows/updates.yml'
+      - '.github/workflows/update.yml'
 
 jobs:
   ansible:
@@ -67,3 +72,36 @@ jobs:
         with:
           branch: "update/nix-flake"
           token: ${{ secrets.GH_PAT_UPDATE }}
+
+  stable:
+    name: Stable
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          ref: stable
+          fetch-depth: 0
+
+      - name: Merge
+        id: merge
+        run: |
+          git log origin/stable...origin/main \
+            --pretty=format:"* %cd: %s (%h)" \
+            --first-parent --date=short --right-only \
+            | tee ${{ runner.temp }}/pull-request-body.md >> $GITHUB_STEP_SUMMARY
+          git merge origin/main
+
+      - name: Create pull request
+        id: create_pr
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
+        with:
+          base: "stable"
+          branch: "update/stable"
+          commit-message: "Merge main into stable to deploy latest changes in production"
+          delete-branch: false
+          title: "Merge main into stable to deploy latest changes in production"
+          token: ${{ secrets.GH_PAT_UPDATE }}
+          body-path: "${{ runner.temp }}/pull-request-body.md"
