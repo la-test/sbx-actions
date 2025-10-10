@@ -33,7 +33,7 @@ jobs:
 
       - name: Get a tmpfs for our secret
         id: tmpfs
-        uses: LeastAuthority/mount-tmpfs-action@v1
+        uses: LeastAuthority/mount-tmpfs-action@48950f563be9cf44a50da1d5dc0aaf38891b150b # v1.0.2
         with:
           size: 2
           root: '/mnt'
@@ -71,7 +71,7 @@ jobs:
 
       - name: Get an agent ready
         id: agent
-        uses: LeastAuthority/ssh-agent-action@v1
+        uses: LeastAuthority/ssh-agent-action@0dd06f345a84b49e021b9e254efe3a1faa95cc98 # v1.0.2
         with:
           private_key: ${{ steps.prepare.outputs.private_key }}
           #auth_sock_path: ${{ github.workspace }}/S.agent.ssh
@@ -91,7 +91,7 @@ jobs:
 
       - name: Mirror content
         id: mirror
-        uses: LeastAuthority/lftp-mirror-action@v1
+        uses: LeastAuthority/lftp-mirror-action@dc7fd0e20e24d51910f6e38248ecef88c6ff1da8 # v1.0.0
         with:
           src: ./test/local/
           dst: "sftp://${{ env.TEST_USER }}@172.17.0.1${{ env.TEST_WORKSPACE }}/test/remote/"

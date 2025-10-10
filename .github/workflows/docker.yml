@@ -47,7 +47,7 @@ jobs:
 
       - name: Prepare service
         id: prepare_service
-        uses: la-test/.github/actions/setup-docker-image@ce2e51c8ec395117c44b8ac98a5b54d9a9c6a16e
+        uses: LeastAuthority/setup-docker-image@137f365304672bf5ef01a6f3fbb34c5fd848ca15 # v1.0.0
         with:
           service-name: ${{ matrix.service-name }}
 

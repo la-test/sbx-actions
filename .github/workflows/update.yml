@@ -1,0 +1,116 @@
+name: Update
+on:
+  schedule:
+    - cron: "27 4 * * 1"
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/update.yml'
+  pull_request:
+    paths:
+      - '.github/workflows/update.yml'
+
+jobs:
+  ansible:
+    name: Ansible
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - name: Prepare Ansible
+        id: prepare_ansible
+        uses: LeastAuthority/setup-docker-image@137f365304672bf5ef01a6f3fbb34c5fd848ca15 # v1.0.0
+        with:
+          service-name: ansible-controller
+
+      - name: Update requirements
+        id: update_requirements
+        run: |
+          docker compose run --rm \
+          ansible-controller bash -e << EOC
+            # Upgrade the main packages
+            pip install --upgrade --upgrade-strategy eager ansible ansible-lint
+            # Save the new requirements
+            python3 -m pip freeze --local > ../docker/ansible/requirements.txt
+            # Reinstall the new requirements to be safe
+            pip install --force-reinstall -r ../docker/ansible/requirements.txt
+            # Some sanity checks
+            python3 -m pip check
+            ansible-playbook --version
+            ansible-lint --version
+          EOC
+
+      - name: Create pull request
+        id: create_pr
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
+        with:
+          add-paths: |
+            docker/ansible/requirements.txt
+          base: "main"
+          branch: "update/ansible"
+          commit-message: "Update Ansible and its dependencies"
+          delete-branch: true
+          title: "Update Ansible and its dependencies"
+          token: ${{ secrets.GH_PAT_UPDATE }}
+
+  nix:
+    name: Nix
+    runs-on: nixos
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: LeastAuthority/checkout-nix-flake@7c1a1484bb5e76ec667e7b07ea198c2afaf041fd # v1.0.0
+
+      - name: Update Nix Flake
+        id: update_nix_flake
+        uses: LeastAuthority/update-nix-flake@4a42e202c5f364aeb834e1b5d1e23fdb73346ffd # v1.0.3
+        with:
+          branch: "update/nix-flake"
+          token: ${{ secrets.GH_PAT_UPDATE }}
+
+  stable:
+    name: Stable
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          ref: stable
+          fetch-depth: 0
+
+      - name: Changelog
+        id: changelog
+        run: |
+          git log origin/main...HEAD \
+            --pretty=format:"* %h (%cd): %s" \
+            --date=short \
+            --first-parent \
+            --left-only \
+            --reverse \
+            | sed -r -e 's/Merge pull request (#[0-9]+) from .[^ ]+/\1/g' \
+            | tee ${{ runner.temp }}/pull-request-body.md \
+            >> $GITHUB_STEP_SUMMARY
+
+      - name: Merge
+        id: merge
+        run: |
+          git config user.name "${{ github.actor }}"
+          git merge origin/main
+
+      - name: Create pull request
+        id: create_pr
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
+        with:
+          branch: "update/stable"
+          commit-message: "Merge main into stable"
+          delete-branch: false
+          title: "Update stable branch with latest changes"
+          token: ${{ secrets.GH_PAT_UPDATE }}
+          body-path: "${{ runner.temp }}/pull-request-body.md"

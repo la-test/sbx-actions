@@ -7,61 +7,32 @@ updates:
     schedule:
       interval: "daily"
       time: "12:30"
-    reviewers:
-      - "btlogy"
   # Keep Docker base images up to date
   - package-ecosystem: "docker"
-    directory: "/docker/nodejs"
+    directories:
+      - "/docker/nodejs"
+      - "/docker/ansible"
+      - "/docker/tofu"
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
     schedule:
       interval: "daily"
       time: "12:30"
-    reviewers:
-      - "btlogy"
   - package-ecosystem: "docker"
-    directory: "/docker/ansible"
-    ignore:
-      - dependency-name: "*"
-        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+    directories:
+      - "/.github/actions/magic-wormhole-secret"
+      - "/ansible/files/docker/stack/feedback"
+      - "/ansible/files/docker/stack/mailbox"
+      - "/ansible/files/docker/stack/relay"
+      - "/ansible/files/docker/stack/traefik"
     schedule:
       interval: "daily"
       time: "12:30"
-    reviewers:
-      - "btlogy"
-  - package-ecosystem: "docker"
-    directory: "/.github/actions/magic-wormhole-secret"
+  # Keep Github Actions up to date
+  # Bump the dependencies of the CI workflow in place here
+  - package-ecosystem: "github-actions"
+    directory: "/.github/workflows"
     schedule:
       interval: "daily"
       time: "12:30"
-    reviewers:
-      - "btlogy"
-  - package-ecosystem: "docker"
-    directory: "/ansible/files/docker/stack/feedback"
-    schedule:
-      interval: "daily"
-      time: "12:30"
-    reviewers:
-      - "btlogy"
-  - package-ecosystem: "docker"
-    directory: "/ansible/files/docker/stack/mailbox"
-    schedule:
-      interval: "daily"
-      time: "12:30"
-    reviewers:
-      - "btlogy"
-  - package-ecosystem: "docker"
-    directory: "/ansible/files/docker/stack/relay"
-    schedule:
-      interval: "daily"
-      time: "12:30"
-    reviewers:
-      - "btlogy"
-  - package-ecosystem: "docker"
-    directory: "/ansible/files/docker/stack/traefik"
-    schedule:
-      interval: "daily"
-      time: "12:30"
-    reviewers:
-      - "btlogy"
