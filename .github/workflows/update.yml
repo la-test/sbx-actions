@@ -47,7 +47,7 @@ jobs:
           add-paths: |
             docker/ansible/requirements.txt
           base: "main"
-          branch: "updates/ansible"
+          branch: "update/ansible"
           commit-message: "Update Ansible and its dependencies"
           delete-branch: true
           title: "Update Ansible and its dependencies"
@@ -63,6 +63,7 @@ jobs:
 
       - name: Update Nix Flake
         id: update_nix_flake
-        uses: LeastAuthority/update-nix-flake@d921dd7a49e8a269d6007a812d58f2c31056ecc8 # v1.0.0
+        uses: LeastAuthority/update-nix-flake@4a42e202c5f364aeb834e1b5d1e23fdb73346ffd # v1.0.3
         with:
+          branch: "update/nix-flake"
           token: ${{ secrets.GH_PAT_UPDATE }}
