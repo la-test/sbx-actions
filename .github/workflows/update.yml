@@ -1,7 +1,7 @@
 name: Update
 on:
   schedule:
-    - cron: "27 4 * * 1"
+    - cron: "10 12 * * *"
   workflow_dispatch:
   push:
     branches:
@@ -101,6 +101,7 @@ jobs:
         id: merge
         run: |
           git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
           git merge origin/main
 
       - name: Create pull request
