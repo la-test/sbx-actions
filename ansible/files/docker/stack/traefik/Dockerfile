@@ -1,2 +1,2 @@
 # Workaround for Dependabot - https://github.com/dependabot/dependabot-core/issues/390
-FROM traefik:2.10.7@sha256:c5181ddf303f1ccfd4bd6d1d9c4867b0500efb6089a0f9ccb16612438f6e934f
+FROM traefik:3.5.0@sha256:4e7175cfe19be83c6b928cae49dde2f2788fb307189a4dc9550b67acf30c11a5
