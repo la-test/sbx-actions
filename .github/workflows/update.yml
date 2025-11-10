@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Checkout
         id: checkout
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Prepare Ansible
         id: prepare_ansible
@@ -46,7 +46,7 @@ jobs:
 
       - name: Create pull request
         id: create_pr
-        if: ${{ github.event_name != 'pull_request' }}
+        if: ${{ contains(fromJSON('["workflow_dispatch", "schedule"]'), github.event_name) }}
         uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
         with:
           add-paths: |
@@ -64,11 +64,11 @@ jobs:
     steps:
       - name: Checkout
         id: checkout
-        uses: LeastAuthority/checkout-nix-flake@7c1a1484bb5e76ec667e7b07ea198c2afaf041fd # v1.0.0
+        uses: LeastAuthority/checkout-nix-flake@90a34024508812fd64b012de7c97ff977e32bd46 # v1.0.1
 
       - name: Update Nix Flake
         id: update_nix_flake
-        uses: LeastAuthority/update-nix-flake@4a42e202c5f364aeb834e1b5d1e23fdb73346ffd # v1.0.3
+        uses: LeastAuthority/update-nix-flake@6cc50371ca6ca779c40cf7520c1102744d098b9e # v1.0.4
         with:
           branch: "update/nix-flake"
           token: ${{ secrets.GH_PAT_UPDATE }}
@@ -79,7 +79,7 @@ jobs:
     steps:
       - name: Checkout
         id: checkout
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           ref: stable
           fetch-depth: 0
@@ -101,11 +101,12 @@ jobs:
         id: merge
         run: |
           git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
           git merge origin/main
 
       - name: Create pull request
         id: create_pr
-        if: ${{ github.event_name != 'pull_request' }}
+        if: ${{ contains(fromJSON('["workflow_dispatch", "schedule"]'), github.event_name) }}
         uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
         with:
           branch: "update/stable"
