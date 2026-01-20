@@ -1,0 +1,16 @@
+---
+# .ansible-lint
+
+profile: production
+
+exclude_paths:
+  - files/
+  - ssh/
+
+parsable: true
+strict: true
+verbosity: 1
+offline: true
+
+loop_var_prefix: "^(__|{role}_)"
+var_naming_pattern: "^[a-z_][a-z0-9_]*$"
