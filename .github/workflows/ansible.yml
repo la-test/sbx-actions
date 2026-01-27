@@ -39,4 +39,4 @@ jobs:
           --rm \
           -e ANSIBLE_FORCE_COLOR=true \
           ansible-controller \
-          ansible-lint
+          ansible-lint --format=pep8
