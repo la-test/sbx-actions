@@ -1,10 +1,10 @@
 {
   inputs = {
     # The nixpkgs channels we want to consume
-    nixpkgs-25_05.url = "github:NixOS/nixpkgs/nixos-25.05";
+    nixpkgs-25_11.url = "github:NixOS/nixpkgs/nixos-25.11";
 
     # Some links to the above channels for consistent naming in outputs
-    nixpkgs.follows = "nixpkgs-25_05";
+    nixpkgs.follows = "nixpkgs-25_11";
 
     # Extra inputs for modules leaving outside nixpkgs
     flake-compat = {
@@ -20,7 +20,7 @@
       # The devShells of this flake only support one system = "x86_64-linux"
       # FIXME: could it support more (flake-utils does not help!)?
       system = "x86_64-linux";
-      # The following devShell needs OpenToFu from NixOS >=25.05
+      # The nixpkgs for the following devShell with OpenToFu and its plugins
       pkgs = import nixpkgs { inherit system; };
     in {
       devShells."${system}".default = pkgs.mkShell {
