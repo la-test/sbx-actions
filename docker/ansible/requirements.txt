@@ -22,12 +22,12 @@ markdown-it-py==3.0.0
 MarkupSafe==3.0.3
 mdurl==0.1.2
 mypy_extensions==1.1.0
-packaging==25.0
+packaging==26.0
 pathspec==1.0.3
 platformdirs==4.5.1
-pycparser==2.23
+pycparser==3.0
 Pygments==2.19.2
-pytokens==0.3.0
+pytokens==0.4.0
 PyYAML==6.0.3
 referencing==0.37.0
 requests==2.31.0
