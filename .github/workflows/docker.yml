@@ -22,6 +22,7 @@ jobs:
     permissions:
       pull-requests: write
       contents: read
+      packages: write
     strategy:
       fail-fast: false
       matrix:
@@ -38,7 +39,8 @@ jobs:
             version-cmd: "tofu version"
             version-cmd-in: "grep -Po '(?<=opentofu:)[.\\d]+' docker/tofu/Dockerfile"
             version-cmd-out: "grep -Po '(?<=OpenTofu v)[.\\d]+'"
-          - service-name: nodejs
+          - context-dir: docker/nodejs
+            service-name: dummy-js
             version-cmd: "node --version"
             version-cmd-in: "grep -Po '(?<=node:)[.\\d]+' docker/nodejs/Dockerfile"
             version-cmd-out: "grep -Po '(?<=v)[.\\d]+'"
@@ -61,6 +63,40 @@ jobs:
           | tee /dev/stderr \
           | ${{ matrix.version-cmd-out }} \
           | grep -q "$(${{ matrix.version-cmd-in }})"
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 #v3.7.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Build and push Docker image
+        id: build-push
+        if: ${{ github.event-name != 'pull_request' }}
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 #v6.19.2
+        with:
+          context: ${{ matrix.context-dir }}
+          file: ${{ matrix.context-dir }}/Dockerfile
+          push: true
+          # secrets: |
+          #   NODE_AUTH_TOKEN=${{ github.token }}
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/${{ matrix.service-name }}:${{ github.event-name == 'push' && github.ref_name || github.head_ref }}-latest
+            ${{ github.ref == 'refs/heads/main' && format('ghcr.io/{0}/{1}:{2}-{3}', github.repository_owner, matrix.service-name, github.ref_name, env.SHORT_SHA) || '' }}
+
+      # - name: Build and push Docker image
+      #   id: build-push-pr
+      #   if: ${{ github.event-name != 'pull_request' }}
+      #   uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 #v6.19.2
+      #   with:
+      #     context: ${{ matrix.context-dir }}
+      #     file: ${{ matrix.context-dir }}/Dockerfile
+      #     push: true
+      #     # secrets: |
+      #     #   NODE_AUTH_TOKEN=${{ github.token }}
+      #     tags: |
+      #       ghcr.io/${{ github.repository_owner }}/${{ matrix.service-name }}:pr-${{ github.event.pull_request.number }}
 
       # - name: Scan docker images
       #   id: scan_images
