@@ -22,9 +22,10 @@ jobs:
     permissions:
       pull-requests: write
       contents: read
+      packages: write
     strategy:
       fail-fast: false
-      matrix:
+      matrix: &matrix
         # TODO: Dynamic matrix with `docker-compose config --services` output
         # But this would require something like a dedicated version.sh entrypoint?
         include:
@@ -38,7 +39,8 @@ jobs:
             version-cmd: "tofu version"
             version-cmd-in: "grep -Po '(?<=opentofu:)[.\\d]+' docker/tofu/Dockerfile"
             version-cmd-out: "grep -Po '(?<=OpenTofu v)[.\\d]+'"
-          - service-name: nodejs
+          - context-dir: docker/nodejs
+            service-name: dummy-js
             version-cmd: "node --version"
             version-cmd-in: "grep -Po '(?<=node:)[.\\d]+' docker/nodejs/Dockerfile"
             version-cmd-out: "grep -Po '(?<=v)[.\\d]+'"
@@ -62,10 +64,58 @@ jobs:
           | ${{ matrix.version-cmd-out }} \
           | grep -q "$(${{ matrix.version-cmd-in }})"
 
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 #v3.7.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Build and push Docker image
+        id: build-push
+        if: ${{ github.event-name != 'pull_request' }}
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 #v6.19.2
+        with:
+          context: ${{ matrix.context-dir }}
+          file: ${{ matrix.context-dir }}/Dockerfile
+          push: true
+          # secrets: |
+          #   NODE_AUTH_TOKEN=${{ github.token }}
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/${{ matrix.service-name }}:${{ github.event-name == 'push' && github.ref_name || github.head_ref }}-latest
+            ${{ github.ref == 'refs/heads/main' && format('ghcr.io/{0}/{1}:{2}-{3}', github.repository_owner, matrix.service-name, github.ref_name, env.SHORT_SHA) || '' }}
+
       # - name: Scan docker images
       #   id: scan_images
       #   uses: aquasecurity/trivy-action@0.31.0
       #   with:
       #     scan-type: 'image'
-      #     image-ref: 'sbx-actions_ansible-controller:latest'
+      #     image-ref: ${{ github.repository }}_${{ matrix.service-name }}::${{ github.event-name == 'push' && github.ref_name || github.head_ref }}-latest
       #     trivy-config: './docker/trivy.yaml'
+
+  cleanup:
+    runs-on: ubuntu-24.04
+    needs:
+      - build
+    if: (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')) || github.event_name == 'pull_request'
+    permissions:
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix: *matrix
+    steps:
+      - uses: actions/delete-package-versions@e5bc658cc4c965c472efe991f8beea3981499c55 #v5.0.0
+        with:
+          package-name: "${{ matrix.service-name }}"
+          package-type: "container"
+          min-versions-to-keep: 0
+          ignore-versions: ^(?!${{ github.head_ref }})$
+        if : ${{ github.event_name == 'pull_request' && github.event.pull_request.action == 'closed' }}
+
+      - uses: actions/delete-package-versions@e5bc658cc4c965c472efe991f8beea3981499c55 #v5.0.0
+        with:
+          package-name: "${{ matrix.service-name }}"
+          package-type: "container"
+          min-versions-to-keep: 7
+          delete-only-untagged-versions: "true"
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
