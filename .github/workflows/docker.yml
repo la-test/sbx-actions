@@ -113,18 +113,16 @@ jobs:
       fail-fast: false
       matrix: *matrix
     steps:
-      - name: Extract data
-        shell: bash
-        run: |
-          echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_ENV
-
-      - name: Delete image from closed PR
-        uses: actions/delete-package-versions@e5bc658cc4c965c472efe991f8beea3981499c55 #v5.0.0
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 #v3.7.0
         with:
-          package-name: "${{ matrix.service-name }}"
-          package-type: "container"
-          min-versions-to-keep: 0
-          ignore-versions: ^(?!${{ github.head_ref }})$
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Delete tag from closed PR
+        run: |
+          docker rmi ${{ format('ghcr.io/{0}/{1}:{2}', github.repository_owner, matrix.service-name, github.head_ref }}
         # Only when closing a PR which did not start from the develop or main branch
         if: github.head_ref != 'develop' && github.head_ref != 'main'
 
