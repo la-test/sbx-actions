@@ -113,16 +113,13 @@ jobs:
       fail-fast: false
       matrix: *matrix
     steps:
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 #v3.7.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ github.token }}
-
       - name: Delete tag from closed PR
-        run: |
-          docker rmi ${{ format('ghcr.io/{0}/{1}:{2}', github.repository_owner, matrix.service-name, github.head_ref) }}
+        uses: bots-house/ghcr-delete-image-action@3827559c68cb4dcdf54d813ea9853be6d468d3a4 #v1.1.0
+        with:
+          owner: "${{ github.repository_owner }}"
+          name: "${{ matrix.service-name }}"
+          token: "${{ github.token }}"
+          tag: "${{ github.head_ref }}"
         # Only when closing a PR which did not start from the develop or main branch
         if: github.head_ref != 'develop' && github.head_ref != 'main'
 
