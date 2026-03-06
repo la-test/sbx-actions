@@ -93,7 +93,7 @@ jobs:
           file: ${{ matrix.context-dir }}/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/${{ matrix.service-name }}:${{ github.event_name != 'pull_request' && format('{0}-latest', github.ref_name) || github.head_ref }}
+            ghcr.io/la-test/${{ matrix.service-name }}:${{ github.event_name != 'pull_request' && format('{0}-latest', github.ref_name) || format('pr-{0}', github.event.pull_request.number) }}
             ${{ github.ref_name == 'main' && format('ghcr.io/{0}/{1}:{2}-{3}', github.repository_owner, matrix.service-name, github.ref_name, env.SHORT_SHA) || '' }}
 
       # - name: Scan docker images
@@ -116,10 +116,10 @@ jobs:
       - name: Delete tag from closed PR
         uses: bots-house/ghcr-delete-image-action@3827559c68cb4dcdf54d813ea9853be6d468d3a4 #v1.1.0
         with:
-          owner: "${{ github.repository_owner }}"
+          owner: "la-test"
           name: "${{ matrix.service-name }}"
           token: "${{ github.token }}"
-          tag: "${{ github.head_ref }}"
+          tag: "pr-${{ github.event.pull_request.number }}"
         # Only when closing a PR which did not start from the develop or main branch
         if: github.head_ref != 'develop' && github.head_ref != 'main'
 
