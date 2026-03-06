@@ -122,7 +122,7 @@ jobs:
 
       - name: Delete tag from closed PR
         run: |
-          docker rmi ${{ format('ghcr.io/{0}/{1}:{2}', github.repository_owner, matrix.service-name, github.head_ref }}
+          docker rmi ${{ format('ghcr.io/{0}/{1}:{2}', github.repository_owner, matrix.service-name, github.head_ref) }}
         # Only when closing a PR which did not start from the develop or main branch
         if: github.head_ref != 'develop' && github.head_ref != 'main'
 
