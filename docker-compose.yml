@@ -75,7 +75,7 @@ services:
           cpus: '1.5'
           memory: 512M
 
-  nodejs:
+  dummy-js:
     build: 
       context: docker/nodejs
       dockerfile: Dockerfile
@@ -87,8 +87,8 @@ services:
     working_dir: /var/lib/appdata
     stdin_open: true
     tty: true
-    hostname: nodejs.local
-    container_name: nodejs.local
+    hostname: dummy-js.local
+    container_name: dummy-js.local
     command: sh
     network_mode: "bridge"
     deploy:
