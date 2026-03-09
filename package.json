@@ -1,5 +1,5 @@
 {
-  "name": "sbx-actions",
+  "name": "dummy-js",
   "version": "0.0.0",
   "description": "Sandbox NodeJS project based on npm",
   "main": "src/index.js",
@@ -8,11 +8,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://code.in.digital-me.nl/git/DEV/njsDummy.git"
+    "url": "https://github.com/la-test/sbx-actions.git"
   },
-  "author": "webmaster@tergology.com",
+  "author": "it-ops@leastauthority.com",
   "license": "GPL-3.0-or-later",
   "dependencies": {
-    "webpack": "^5.105.2"
+    "webpack": "^5.105.3"
   }
 }

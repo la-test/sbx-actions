@@ -1,7 +1,7 @@
 ansible==12.3.0
-ansible-compat==25.12.0
-ansible-core==2.19.6
-ansible-lint==26.1.1
+ansible-compat==25.12.1
+ansible-core==2.19.7
+ansible-lint==26.2.0
 attrs==25.4.0
 black==26.1.0
 bracex==2.6
@@ -11,7 +11,7 @@ charset-normalizer==3.4.3
 click==8.3.1
 cryptography==46.0.5
 distro==1.9.0
-filelock==3.24.3
+filelock==3.25.0
 idna==3.10
 importlib-resources==5.13.0
 importlib_metadata==8.7.0
