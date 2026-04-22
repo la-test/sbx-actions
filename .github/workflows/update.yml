@@ -6,17 +6,17 @@ on:
     inputs:
       ansible:
         description: Ansible and its deps
-        required: false
+        required: true
         default: true
         type: boolean
       nix:
         description: Nix flake
-        required: false
+        required: true
         default: true
         type: boolean
       stable:
         description: Stable branch
-        required: false
+        required: true
         default: true
         type: boolean
   push:
@@ -31,7 +31,7 @@ on:
 jobs:
   ansible:
     name: Ansible
-    if: ${{ inputs.ansible || inputs.ansible == null }}
+    if: ${{ (github.event_name != 'workflow_dispatch') || inputs.ansible }}
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
@@ -78,7 +78,7 @@ jobs:
   nix:
     name: Nix
     runs-on: nixos
-    if: ${{ inputs.nix || inputs.nix == null }}
+    if: ${{ (github.event_name != 'workflow_dispatch') || inputs.nix }}
     steps:
       - name: Checkout
         id: checkout
@@ -93,7 +93,7 @@ jobs:
 
   stable:
     name: Stable
-    if: ${{ inputs.stable || inputs.stable == null }}
+    if: ${{ (github.event_name != 'workflow_dispatch') || inputs.stable }}
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
