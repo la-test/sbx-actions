@@ -3,6 +3,22 @@ on:
   schedule:
     - cron: "27 4 * * 1"
   workflow_dispatch:
+    inputs:
+      ansible:
+        description: Ansible and its deps
+        required: false
+        default: true
+        type: boolean
+      nix:
+        description: Nix flake
+        required: false
+        default: true
+        type: boolean
+      stable:
+        description: Stable branch
+        required: false
+        default: true
+        type: boolean
   push:
     branches:
       - main
@@ -15,6 +31,7 @@ on:
 jobs:
   ansible:
     name: Ansible
+    if: ${{ inputs.ansible || inputs.ansible == null }}
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
@@ -61,6 +78,7 @@ jobs:
   nix:
     name: Nix
     runs-on: nixos
+    if: ${{ inputs.nix || inputs.nix == null }}
     steps:
       - name: Checkout
         id: checkout
@@ -75,6 +93,7 @@ jobs:
 
   stable:
     name: Stable
+    if: ${{ inputs.stable || inputs.stable == null }}
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
