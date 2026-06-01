@@ -24,7 +24,7 @@ mdurl==0.1.2
 mypy_extensions==1.1.0
 packaging==26.2
 pathspec==1.0.4
-platformdirs==4.9.6
+platformdirs==4.10.0
 pycparser==3.0
 Pygments==2.19.2
 pytokens==0.4.1
@@ -33,7 +33,7 @@ referencing==0.37.0
 requests==2.31.0
 resolvelib==1.2.1
 rich==14.1.0
-rpds-py==0.30.0
+rpds-py==2026.5.1
 ruamel.yaml==0.19.1
 ruamel.yaml.clib==0.2.15
 subprocess-tee==0.4.2
