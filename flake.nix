@@ -1,12 +1,12 @@
 {
   inputs = {
     # The nixpkgs channels we want to consume
-    nixpkgs-25_11.url = "github:NixOS/nixpkgs/nixos-25.11";
+    nixpkgs-26_05.url = "github:NixOS/nixpkgs/nixos-26.05";
 
     # Some links to the above channels for consistent naming in outputs
-    nixpkgs.follows = "nixpkgs-25_11";
+    nixpkgs.follows = "nixpkgs-26_05";
 
-    # Extra inputs for modules leaving outside nixpkgs
+    # Extra inputs for software living outside nixpkgs
     flake-compat = {
       url = "https://flakehub.com/f/edolstra/flake-compat/1.tar.gz";
     };
