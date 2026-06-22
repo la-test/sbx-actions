@@ -82,11 +82,11 @@ jobs:
     steps:
       - name: Checkout
         id: checkout
-        uses: LeastAuthority/checkout-nix-flake@90a34024508812fd64b012de7c97ff977e32bd46 # v1.0.1
+        uses: LeastAuthority/checkout-nix-flake@57dc3f9e356a67bb185e9579963606b71a435927 # v1.0.2
 
       - name: Update Nix Flake
         id: update_nix_flake
-        uses: LeastAuthority/update-nix-flake@6cc50371ca6ca779c40cf7520c1102744d098b9e # v1.0.4
+        uses: LeastAuthority/update-nix-flake@e08c38863c30ed2c783ac3f7e5939b7c6a19af94 # v1.0.6
         with:
           branch: "update/nix-flake"
           token: ${{ secrets.GH_PAT_UPDATE }}
