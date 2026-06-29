@@ -25,7 +25,7 @@ jobs:
     steps:
       - name: Checkout
         id: checkout
-        uses: LeastAuthority/checkout-nix-flake@57dc3f9e356a67bb185e9579963606b71a435927
+        uses: LeastAuthority/checkout-nix-flake@0a440df193fd6d532fcd49e12d493fe591626ec0
 
       - name: Check Nix Flake
         id: check_flake
