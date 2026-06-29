@@ -36,7 +36,7 @@ jobs:
     steps:
       - name: Checkout
         id: checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Prepare Ansible
         id: prepare_ansible
@@ -82,7 +82,7 @@ jobs:
     steps:
       - name: Checkout
         id: checkout
-        uses: LeastAuthority/checkout-nix-flake@57dc3f9e356a67bb185e9579963606b71a435927 # v1.0.2
+        uses: LeastAuthority/checkout-nix-flake@0a440df193fd6d532fcd49e12d493fe591626ec0 # v1.0.3
 
       - name: Update Nix Flake
         id: update_nix_flake
@@ -98,7 +98,7 @@ jobs:
     steps:
       - name: Checkout
         id: checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           ref: stable
           fetch-depth: 0
