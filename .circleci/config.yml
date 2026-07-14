@@ -1,0 +1,271 @@
+# Just to trigger CircleCI
+version: 2.1
+
+orbs:
+  # Get easier access to the Windows machine executor.
+  win: "circleci/windows@4.1.1"
+
+aliases:
+  - &PREPARE_VIRTUALENV
+    run:
+      name: "Prepare environment"
+      command: |
+        python -m venv venv
+        . venv/bin/activate
+        pip install --upgrade certifi pip
+        pip install -r ${PIP_REQUIREMENTS}
+        pip freeze
+
+  - nix_docker: &NIX_DOCKER
+      # Run in a highly Nix-capable environment.
+      - image: "nixos/nix:2.15.0"
+
+  - nix_environ: &NIX_ENVIRON
+      # Let us use features marked "experimental".  For example, most/all of
+      # the `nix <subcommand>` forms.
+      NIX_CONFIG: "experimental-features = nix-command flakes"
+
+      # Pin a NixOS 21.11 revision.  Most of the software involved in the
+      # build process is pinned by nix/sources.json with niv but a few things
+      # need to work before we get that far.  This pin is for those things.
+      # This pin has no particular bearing on what version of our dependencies
+      # we are testing against, what version of Python we support, etc.  It is
+      # part of CI infrastructure.
+      NIXPKGS: "https://github.com/NixOS/nixpkgs/archive/28abc4e43a24d28729509e2d83f5c4f3b3418189.tar.gz"
+
+
+jobs:
+  docker-test:
+    docker:
+      - image: "python:3.11-bookworm"
+
+    environment:
+      PIP_REQUIREMENTS: "docker/ansible/requirements.txt"
+
+    steps:
+      - checkout
+      - run:
+          name: "Check context"
+          command: |
+            echo "SBX_VAR = $SBX_VAR"
+
+      - <<: *PREPARE_VIRTUALENV
+
+      - run:
+          name: "Test"
+          command: |
+            . venv/bin/activate
+            ansible-lint ansible
+
+  windows-tests:
+    parameters:
+      py-version:
+        type: "string"
+
+    executor:
+      # https://circleci.com/developer/orbs/orb/circleci/windows
+      name: "win/server-2022"
+      # resource class, can be "medium", "large", "xlarge", "2xlarge"
+      size: "medium"
+      # The default Windows machine image changes from time to time - which
+      # often breaks things.  Avoid that.
+      version: "2024.04.1"
+
+    environment:
+      PIP_REQUIREMENTS: "docker/ansible/requirements.txt"
+
+    steps:
+      # Commands are run in a Windows virtual machine environment
+      - checkout
+      - run:
+          name: "Prepare environment"
+          command: |
+            py -<< parameters.py-version >> -c "# This err-exits if no Python of this version is installed"
+            if (-not $?) { choco install python --version=<< parameters.py-version >> --confirm --allow-downgrade }
+            py -<< parameters.py-version >> -V
+            py -<< parameters.py-version >> -m pip install -v --upgrade pip wheel
+            py -<< parameters.py-version >> -m pip install -v -r $Env:PIP_REQUIREMENTS
+            py -<< parameters.py-version >> -m pip freeze
+      - run:
+          name: "Test"
+          command: |
+            py -<< parameters.py-version >> -c "print('Nothing to do here')"
+
+  macos-tests:
+    parameters:
+      py-version:
+        type: "string"
+      xcode-version:
+        type: "string"
+
+    macos:
+      xcode: << parameters.xcode-version >>
+
+    environment:
+      PIP_REQUIREMENTS: "docker/ansible/requirements.txt"
+
+    steps:
+      - checkout
+
+      - run:
+          name: "Install Python"
+          command: |
+            type -p python<< parameters.py-version >> || brew install python@<< parameters.py-version >>
+            echo 'export PATH="/usr/local/opt/python@<< parameters.py-version >>/bin:$PATH"' >> "$BASH_ENV"
+
+      - run:
+          name: "Get Pip"
+          command: |
+            curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+            python<< parameters.py-version >> get-pip.py
+
+      - run:
+          name: "Prepare wheelhouse"
+          command: |
+            test -d wheelhouse || mkdir wheelhouse
+
+      - run:
+          name: "Prepare environment"
+          command: |
+            # The CircleCI macOS Python environment has some Python libraries
+            # in it which conflict with the software's requirements.  So
+            # install virtualenv and use it to create an environment for
+            # the software so it can have all its own versions of its
+            # dependencies.
+            python<< parameters.py-version >> -m venv venv
+
+            # Get the newest pip we can because who knows what came along with
+            # that virtualenv.  Also get the wheel package or we won't be able
+            # to build any wheels in the next step.
+            venv/bin/python -m pip install \
+              --find-links file://${PWD}/wheelhouse \
+              --upgrade pip wheel
+
+      - run:
+          name: "Populate wheelhouse"
+          command: |
+            # Get wheels for all the Python packages we depend on - either
+            # directly via the software distutils configuration *or*
+            # because some other tool depends on it.  For example, pip has a
+            # bunch of dependencies it is nice to have around, and using the
+            # wheels depends on the wheel package.
+            venv/bin/python -m pip wheel \
+              --wheel-dir wheelhouse \
+              -r $PIP_REQUIREMENTS \
+              pip wheel ansible
+
+      - run:
+          name: "Install"
+          command: |
+            # Now we can install the software and its dependencies and test
+            # dependencies into the environment.
+            venv/bin/pip install \
+              --no-index \
+              --find-links file://${PWD}/wheelhouse \
+              -r $PIP_REQUIREMENTS
+            venv/bin/pip freeze
+
+      - run:
+          name: "Test"
+          command: |
+            # The test suite might leak file descriptors.  macOS defaults to a
+            # limit of 256.  This should be fixed, but not now ...
+            ulimit -Sn 1024
+
+            # And finally we can run the tests.  We'll run them with 4 jobs
+            # because the resource class documented at
+            # https://support.circleci.com/hc/en-us/articles/360009144794-macOS-resources
+            # says "Medium: 4 vCPUs, 8GB RAM".
+            . venv/bin/activate
+            ansible-lint ansible
+
+  nix-test:
+    docker:
+      - <<: *NIX_DOCKER
+
+    environment:
+      <<: *NIX_ENVIRON
+
+    steps:
+      - checkout
+      - run:
+          name: "Test"
+          command: |
+            echo "Nothing to do here"
+
+  linux-tests: &LINUX_TESTS
+    parameters:
+      py-version:
+        type: "string"
+
+    docker:
+      - <<: *NIX_DOCKER
+
+    environment:
+      <<: *NIX_ENVIRON
+
+      # CACHIX_AUTH_TOKEN is manually set in the CircleCI web UI and allows us
+      # to push to CACHIX_NAME.
+      CACHIX_NAME: "privatestorage-opensource"
+
+    steps:
+      - run: &SETUP_CACHIX
+          name: "Set up Cachix"
+          command: |
+            # Install cachix, the Nix-friendly caching tool.
+            nix-env -f $NIXPKGS -iA cachix bash
+            # Activate it for "binary substitution".  This sets up
+            # configuration that lets Nix download something from the cache
+            # instead of building it locally, if possible.
+            cachix use "${CACHIX_NAME}"
+
+      - checkout
+
+      - run:
+          name: "Run Test Suite"
+          # If we have to build absolutely everything from scratch or if it
+          # takes a while to download pypi-deps-db or some reason then we
+          # might be busy for a while.  We use --verbose to try to be a little
+          # noisier as we build but who knows what that actually guarantees...
+          no_output_timeout: "30m"
+          command: |
+            # Build one of the test packages defined by the flake.  Choose one
+            # that matches our parameters - python version, etc.
+            #
+            # Also explicitly specify the number of cores to use such that it
+            # only slightly exceeds what CircleCI advertises for the resource
+            # class (defined above) we're using.  The CircleCI environment
+            # looks like it has many more cores than are actually usable by
+            # our build.
+            echo "We have nothing to do here"
+
+workflows:
+  version: 2
+
+  everything:
+    jobs:
+    - "docker-test":
+        context:
+          - sbx-context
+
+    - "nix-test"
+    - "linux-tests":
+        matrix:
+          parameters:
+            py-version:
+              - "311"
+
+    # https://circleci.com/docs/using-macos/
+    - "macos-tests":
+        matrix:
+          parameters:
+            py-version:
+              - "3.11"
+            xcode-version:
+              - "13.4.1"
+
+    - "windows-tests":
+        matrix:
+          parameters:
+            py-version:
+              - "3.11"
