@@ -19,7 +19,7 @@ Vagrant.configure("2") do |config|
   config.vm.define host_name
   config.vm.hostname = host_name
   config.vm.box = "debian/bookworm64"
-  config.vm.box_version = "12.20240905.1"
+  config.vm.box_version = "12.20260519.1"
   config.vm.box_check_update = false
 
   # Tune LibVirt/QEmu guests
