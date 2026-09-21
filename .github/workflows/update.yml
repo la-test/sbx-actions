@@ -40,7 +40,7 @@ jobs:
 
       - name: Prepare Ansible
         id: prepare_ansible
-        uses: LeastAuthority/setup-docker-image@137f365304672bf5ef01a6f3fbb34c5fd848ca15 # v1.0.0
+        uses: LeastAuthority/setup-docker-image@41235dbc208c87fdacc141d8cc80d44b5157085d # v1.0.2
         with:
           service-name: ansible-controller
 
