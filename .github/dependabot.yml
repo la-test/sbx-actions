@@ -25,10 +25,18 @@ updates:
       - "/ansible/files/docker/stack/feedback"
       - "/ansible/files/docker/stack/mailbox"
       - "/ansible/files/docker/stack/relay"
-      - "/ansible/files/docker/stack/traefik"
     schedule:
       interval: "daily"
       time: "12:30"
+  - package-ecosystem: "docker-compose"
+    directory: "/ansible/files/docker/stack"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    schedule:
+      interval: "daily"
+      time: "12:00"
+    open-pull-requests-limit: 32
   # Keep Github Actions up to date
   # Bump the dependencies of the CI workflow in place here
   - package-ecosystem: "github-actions"
