@@ -3,7 +3,7 @@
 ##############################
 
 # Pull base image from official repo
-FROM ghcr.io/opentofu/opentofu:1.9.1@sha256:ea67f099effc220a2a2610dd4dd173154408b473bbebe109129f3800eedb19c6
+FROM ghcr.io/opentofu/opentofu:1.9.4@sha256:2fc03a4a0e745558a0693f1e80ffe56c3c43826ee21140c4d27f52fd938b82fe
 
 ##################################
 # Application level requirements #
